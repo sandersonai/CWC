@@ -1,14 +1,14 @@
-
 'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, ChevronLeft, ChevronRight, RotateCcw, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Trophy, Award, HelpCircle } from 'lucide-react';
 import type { QuizData } from '@/components/chat/QuizDisplay'; // Re-use QuizData interface
 import { Progress } from '@/components/ui/progress';
 
@@ -61,7 +61,6 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
     setAnswers(new Array(questions.length).fill(null));
     setSubmitted(false);
     setShowResults(false);
-    // Note: This only restarts the UI. To get new questions, the parent component would need to re-trigger generation.
   };
   
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
@@ -73,6 +72,8 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
         score++;
       }
     });
+    const percentageScore = (score / questions.length) * 100;
+    const passed = percentageScore >= 80;
 
     return (
       <Card className="w-full max-w-2xl mx-auto my-4 bg-card border-border/70 shadow-lg">
@@ -83,19 +84,52 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-2xl font-semibold">
-            You scored {score} out of {questions.length}!
+          <div className="flex flex-col items-center space-y-4">
+            {passed ? (
+              <>
+                <Image
+                  src="https://picsum.photos/300/200"
+                  alt="Passing Grade AI Bot"
+                  width={300}
+                  height={200}
+                  className="rounded-md shadow-lg"
+                  data-ai-hint="futuristic robot trophy"
+                />
+                <p className="text-2xl font-bold text-green-400">Congratulations! You Passed!</p>
+                <Award className="h-12 w-12 text-yellow-400" />
+              </>
+            ) : (
+              <>
+                <Image
+                  src="https://picsum.photos/300/200"
+                  alt="Encouraging AI Bot"
+                  width={300}
+                  height={200}
+                  className="rounded-md shadow-lg"
+                  data-ai-hint="robot encouraging"
+                />
+                <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
+                <p className="text-lg text-muted-foreground">A little more training is needed.</p>
+                <HelpCircle className="h-12 w-12 text-blue-400" />
+              </>
+            )}
+          </div>
+          <p className="text-xl font-semibold mt-4">
+            You scored {score} out of {questions.length}! ({percentageScore.toFixed(0)}%)
           </p>
-          <Progress value={(score / questions.length) * 100} className="w-full h-3" />
-          <div className="max-h-80 overflow-y-auto space-y-3 p-1">
+          <Progress value={percentageScore} className="w-full h-3" 
+            indicatorClassName={passed ? 'bg-green-500' : 'bg-blue-500'}
+          />
+          <div className="max-h-60 overflow-y-auto space-y-3 p-1 mt-4 border-t border-border pt-4">
+            <h3 className="text-md font-semibold text-left text-muted-foreground mb-2">Review Your Answers:</h3>
             {questions.map((q, idx) => (
               <div key={idx} 
-                   className={cn("p-3 rounded-md border text-left", 
-                                answers[idx] === q.correctOptionIndex ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10")}>
-                <p className="font-medium text-sm">{idx + 1}. {q.questionText}</p>
-                <p className="text-xs mt-1">Your answer: {answers[idx] !== null ? q.options[answers[idx]!].text : "Not answered"}</p>
-                <p className="text-xs text-green-700 dark:text-green-300">Correct answer: {q.options[q.correctOptionIndex].text}</p>
-                {q.explanation && <p className="text-xs mt-1 italic text-muted-foreground">Explanation: {q.explanation}</p>}
+                   className={cn("p-3 rounded-md border text-left text-sm", 
+                                answers[idx] === q.correctOptionIndex ? "border-green-600 bg-green-500/10" : "border-red-600 bg-red-500/10")}>
+                <p className="font-medium">{idx + 1}. {q.questionText}</p>
+                <p className="text-xs mt-1">Your answer: <span className={answers[idx] === q.correctOptionIndex ? "text-green-500" : "text-red-500"}>{answers[idx] !== null ? q.options[answers[idx]!].text : "Not answered"}</span></p>
+                {answers[idx] !== q.correctOptionIndex && <p className="text-xs text-green-600 dark:text-green-400">Correct answer: {q.options[q.correctOptionIndex].text}</p>}
+                {q.explanation && <p className="text-xs mt-1 italic text-muted-foreground/80">Explanation: {q.explanation}</p>}
               </div>
             ))}
           </div>
@@ -103,7 +137,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
         <CardFooter className="flex justify-center pt-4 pb-6">
           <Button onClick={handleRestartQuiz} variant="outline" className="text-accent border-accent hover:bg-accent/10">
             <RotateCcw className="mr-2 h-4 w-4" />
-            Retake Same Quiz (or request new)
+            Retake Same Quiz
           </Button>
         </CardFooter>
       </Card>
