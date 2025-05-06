@@ -1,15 +1,16 @@
+
 'use server';
 /**
  * @fileOverview Flow for generating a quiz question for a given AI/ML topic.
  *
  * - generateQuiz - A function that takes a topic and returns a quiz question.
  * - GenerateQuizInput - The input type for the generateQuiz function.
- * - GenerateQuizOutput - The return type for the generateQuiz function (QuizQuestionSchema).
+ * - GenerateQuizOutput - The return type for the generateQuiz function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { generateQuizTool, QuizQuestionSchema } from '@/ai/tools/generate-quiz-tool';
+import { generateQuizTool, QuizQuestionSchema, type QuizQuestion } from '@/ai/tools/generate-quiz-tool';
 
 // Input schema for the flow
 const GenerateQuizFlowInputSchema = z.object({
@@ -17,9 +18,10 @@ const GenerateQuizFlowInputSchema = z.object({
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizFlowInputSchema>;
 
-// Output schema for the flow - reusing the tool's output schema
-export const GenerateQuizFlowOutputSchema = QuizQuestionSchema;
-export type GenerateQuizOutput = z.infer<typeof GenerateQuizFlowOutputSchema>;
+// Output type for the flow - reusing the tool's output type
+// We use the QuizQuestionSchema (imported from the tool) internally for defining the flow's outputSchema.
+// We export the GenerateQuizOutput type, which is an alias for the QuizQuestion type.
+export type GenerateQuizOutput = QuizQuestion;
 
 
 export async function generateQuiz(input: GenerateQuizInput): Promise<GenerateQuizOutput> {
@@ -34,7 +36,7 @@ export async function generateQuiz(input: GenerateQuizInput): Promise<GenerateQu
 const quizPrompt = ai.definePrompt({
     name: 'generateQuizPrompt',
     input: { schema: GenerateQuizFlowInputSchema },
-    output: { schema: GenerateQuizFlowOutputSchema }, // LLM output would need to match this.
+    output: { schema: QuizQuestionSchema }, // LLM output would need to match this.
     tools: [generateQuizTool],
     prompt: `Generate a quiz question about the topic: {{{topic}}}. Use the generateQuizTool.
              Your final output MUST be the direct JSON output of the generateQuizTool.`,
@@ -45,7 +47,7 @@ const generateQuizFlow = ai.defineFlow(
   {
     name: 'generateQuizFlow',
     inputSchema: GenerateQuizFlowInputSchema,
-    outputSchema: GenerateQuizFlowOutputSchema,
+    outputSchema: QuizQuestionSchema, // Use the imported schema directly
   },
   async (input) => {
     // For this use case, we always want to generate a quiz if this flow is called.
@@ -60,3 +62,4 @@ const generateQuizFlow = ai.defineFlow(
     }
   }
 );
+
