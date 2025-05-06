@@ -1,9 +1,8 @@
-
 "use client";
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, Film } from 'lucide-react';
+import { Loader2, Download, Image as ImageIcon, MessageSquare, Film, Link as LinkIcon } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -20,11 +19,17 @@ import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
 
+interface SuggestedResource {
+  title: string;
+  url: string;
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   image?: string; // Data URI for image
+  suggestedResources?: SuggestedResource[];
 }
 
 export default function Home() {
@@ -69,14 +74,16 @@ export default function Home() {
     try {
       let response;
       if (uploadedImage) {
-        response = await analyzeImageAndRespond({
+        // Analyze image flow doesn't currently support suggested resources,
+        // but we can adapt it or keep it simpler. For now, no suggested resources.
+        const analysisResponse = await analyzeImageAndRespond({
           imageDataUri: uploadedImage,
           question: inputText || 'Analyze this image and explain any relevant AI concepts.',
         });
         const botMessage: Message = {
           id: `${userMessageId}-bot`,
           role: 'assistant',
-          content: response.answer,
+          content: analysisResponse.answer,
         };
         setMessages((prev) => [...prev, botMessage]);
       } else {
@@ -87,6 +94,7 @@ export default function Home() {
            id: `${userMessageId}-bot`,
           role: 'assistant',
           content: response.response,
+          suggestedResources: response.suggestedResources || [],
         };
         setMessages((prev) => [...prev, botMessage]);
       }
@@ -251,6 +259,13 @@ export default function Home() {
         if (msg.image) {
            textToPrint = "[User uploaded an image]\n" + textToPrint;
         }
+        if (msg.suggestedResources && msg.suggestedResources.length > 0) {
+          textToPrint += "\n\nLearn More:\n";
+          msg.suggestedResources.forEach(res => {
+            textToPrint += `- ${res.title}: ${res.url}\n`;
+          });
+        }
+
 
         doc.setTextColor(textColor);
 
@@ -349,14 +364,15 @@ export default function Home() {
                 {messages.length === 0 && !isLoading && (
                   <ChatMessage
                     role="assistant"
-                    content="Welcome to Sanderson AI Learning! I'm Christian, your AI guide. Ask me anything about AI and machine learning, or upload an image for analysis."
+                    content="Welcome to Sanderson AI Learning! I'm Christian, your AI guide. Ask me anything about AI and machine learning (including ethics, neural networks, generative AI, and XAI), or upload an image for analysis."
+                    suggestedResources={[]}
                   />
                 )}
-                {messages.map((msg) => (
+                {messages.map((msg, index) => (
                   <ChatMessage key={msg.id} {...msg} />
                 ))}
                 {isLoading && (
-                  <ChatMessage role="assistant" content="" isLoading={true} />
+                  <ChatMessage role="assistant" content="" isLoading={true} suggestedResources={[]} />
                 )}
                 </div>
               </ScrollArea>
@@ -459,5 +475,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
-    

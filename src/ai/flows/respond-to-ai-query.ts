@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { findRelevantResourcesTool } from '@/ai/tools/find-relevant-resources-tool';
 
 const RespondToAiQueryInputSchema = z.object({
   query: z.string().describe('The AI or machine learning query from the user.'),
@@ -21,8 +22,14 @@ const RespondToAiQueryInputSchema = z.object({
 });
 export type RespondToAiQueryInput = z.infer<typeof RespondToAiQueryInputSchema>;
 
+const SuggestedResourceSchema = z.object({
+  title: z.string().describe('The title of the suggested resource.'),
+  url: z.string().url().describe('The URL of the suggested resource.'),
+});
+
 const RespondToAiQueryOutputSchema = z.object({
   response: z.string().describe('The response to the AI query.'),
+  suggestedResources: z.array(SuggestedResourceSchema).optional().describe('A list of suggested resources for further learning.'),
 });
 export type RespondToAiQueryOutput = z.infer<typeof RespondToAiQueryOutputSchema>;
 
@@ -34,13 +41,27 @@ const prompt = ai.definePrompt({
   name: 'respondToAiQueryPrompt',
   input: {schema: RespondToAiQueryInputSchema},
   output: {schema: RespondToAiQueryOutputSchema},
-  prompt: `You are Christian, a helpful AI chatbot for the Sanderson AI Learning app. Your goal is to answer questions about AI and machine learning in a clear, educational, and engaging manner. Use the following information to formulate your response. Be coherent and helpful, and able to handle follow-up questions.
+  tools: [findRelevantResourcesTool],
+  prompt: `You are Christian, a helpful AI chatbot for the Sanderson AI Learning app. Your goal is to answer questions about AI and machine learning in a clear, educational, and engaging manner.
+  Your knowledge base includes:
+  - Core AI/ML concepts (supervised/unsupervised learning, reinforcement learning, etc.)
+  - Neural Networks (architectures, training, applications)
+  - Generative AI (GANs, VAEs, Transformers, LLMs, diffusion models) and popular frameworks.
+  - AI Ethics (bias, fairness, transparency, accountability, societal impact).
+  - Explainable AI (XAI) techniques and importance.
 
-Query: {{{query}}}
+  Analyze the user's query. Provide a comprehensive answer to the query.
+  Then, identify the primary AI/ML topic within the user's query.
+  If a clear topic is identified and the 'findRelevantResourcesTool' can provide relevant external resources for that topic, use the tool by providing the identified topic as input.
+  Only use the tool if you are confident it will provide valuable, distinct "Learn More" suggestions beyond your own answer.
+  Include any resources returned by the tool in the 'suggestedResources' field of your output. If the tool returns no resources, or if you decide not to use the tool for a particular query, omit the 'suggestedResources' field or return an empty array.
 
-{{#if imageUri}}
-Image: {{media url=imageUri}}
-{{/if}}
+  Use the following information to formulate your response:
+  Query: {{{query}}}
+
+  {{#if imageUri}}
+  Image: {{media url=imageUri}}
+  {{/if}}
 `,
 });
 
