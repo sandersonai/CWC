@@ -90,7 +90,7 @@ export function ChatInput({
             data-ai-hint="uploaded image"
           />
           <Button
-            variant="destructive" 
+            variant="destructive"
             size="icon"
             className="absolute -right-2 -top-2 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={handleRemoveImage}
@@ -115,13 +115,13 @@ export function ChatInput({
       <Tooltip>
         <TooltipTrigger asChild>
             <Button
-                variant="default" 
+                variant="default"
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
                 className={cn(
                     isLoading ? 'bg-accent/70 cursor-not-allowed' : 'bg-accent hover:bg-accent/90 text-accent-foreground',
-                    "border border-accent/50" 
+                    "border border-accent/50"
                 )}
             >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Send className="h-5 w-5 text-white" />}
@@ -135,4 +135,3 @@ export function ChatInput({
     </TooltipProvider>
   );
 }
-
