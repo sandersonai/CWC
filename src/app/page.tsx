@@ -124,8 +124,16 @@ export default function Home() {
     setGeneratedImage(null);
 
     try {
+        console.log("Calling generateImageFromPrompt with prompt:", imagePrompt);
         const response = await generateImageFromPrompt({ prompt: imagePrompt });
+        console.log("Received response from generateImageFromPrompt:", response);
+
+        if (!response?.imageDataUri) {
+             throw new Error('Image generation failed: No image data returned.');
+        }
+
         setGeneratedImage(response.imageDataUri);
+        console.log("Generated image URI set:", response.imageDataUri); // Log the URI being set
         toast({
             title: 'Image Generated',
             description: 'Your image has been generated successfully.',
@@ -444,7 +452,7 @@ export default function Home() {
                                     alt="Generated image"
                                     layout="fill"
                                     objectFit="contain" // Use contain to show the whole image
-                                    className="rounded-md p-1" // Added padding within container
+                                    className="rounded-md" // Removed p-1
                                     data-ai-hint="generated art" // Changed hint
                                 />
                             ) : (
@@ -463,3 +471,4 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
