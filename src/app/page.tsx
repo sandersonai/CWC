@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb } from 'lucide-react'; // Added Lightbulb
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon } from 'lucide-react'; // Added Lightbulb, Link
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -46,32 +46,44 @@ const aiTools = [
     name: "TensorFlow Playground",
     url: "https://playground.tensorflow.org/",
     description: "Visualize and experiment with neural networks in your browser.",
+    icon: <BrainCircuit className="h-4 w-4 text-primary" />
   },
   {
     name: "Leonardo.Ai",
     url: "https://leonardo.ai/",
     description: "Free tier for AI image generation and creative tools.",
+    icon: <ImageIcon className="h-4 w-4 text-primary" />
   },
   {
     name: "Hugging Face - Spaces",
     url: "https://huggingface.co/spaces",
     description: "Explore and run various AI models and demos.",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.66 13.86c-.13.39-.5.64-.91.64h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zm-9.32 0c-.13.39-.5.64-.91.64H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.f53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
   },
   {
     name: "Perplexity AI",
     url: "https://www.perplexity.ai/",
     description: "Conversational AI search engine with cited sources.",
+    icon: <MessageSquare className="h-4 w-4 text-primary" />
   },
   {
     name: "Kaggle",
     url: "https://www.kaggle.com/",
-    description: "Platform for data science and machine learning competitions, datasets, and notebooks.",
+    description: "Platform for data science, ML competitions, datasets, and notebooks.",
+    icon: <BarChart3 className="h-4 w-4 text-primary" />
   },
   {
     name: "Google Colab",
     url: "https://colab.research.google.com/",
-    description: "Free Jupyter notebook environment that requires no setup and runs entirely in the cloud.",
-  }
+    description: "Free Jupyter notebook environment in the cloud.",
+    icon: <Brain className="h-4 w-4 text-primary" />
+  },
+  {
+    name: "Google Cloud AI (Free Tier)",
+    url: "https://cloud.google.com/free/docs/free-cloud-features#ai_and_machine_learning",
+    description: "Access various Google Cloud AI services with free tier limits.",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm6.62 10.88c-.09.32-.38.54-.72.54h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zM7.38 12.88c-.09.32-.38.54-.72.54H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
+  },
 ];
 
 
@@ -445,34 +457,36 @@ export default function Home() {
                   <Lightbulb className="mr-2 h-4 w-4" /> AI Tool Kit <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-72 bg-popover border-border">
-                <DropdownMenuLabel className="text-center">Free AI Tools for Beginners</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              <DropdownMenuContent align="center" className="w-80 bg-popover border-border">
+                <DropdownMenuLabel className="text-center text-sm font-medium text-foreground">Free AI Tools for Beginners</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border/50" />
                 {aiTools.map((tool) => (
-                  <DropdownMenuItem key={tool.name} onSelect={() => window.open(tool.url, '_blank', 'noopener,noreferrer')} className="hover:bg-accent/20 flex flex-col items-start">
-                    <span className="font-semibold">{tool.name}</span>
-                    <span className="text-xs text-muted-foreground">{tool.description}</span>
+                  <DropdownMenuItem key={tool.name} onSelect={() => window.open(tool.url, '_blank', 'noopener,noreferrer')} className="hover:bg-accent/20 focus:bg-accent/20 flex items-start p-2 space-x-2">
+                    <div className="flex-shrink-0 mt-0.5">{tool.icon}</div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-foreground">{tool.name}</span>
+                      <span className="text-xs text-muted-foreground">{tool.description}</span>
+                    </div>
+                     <LinkIcon className="h-3 w-3 text-muted-foreground/70 ml-auto self-center" />
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4"> {/* Increased spacing with space-x-4 */}
             {activeTab === "chat" && !showMultiQuizDialog && (
-              <div className="flex flex-col items-center">
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant="outline" 
+                  size="sm"
                   onClick={handleDownloadPdf}
                   disabled={messages.length === 0}
                   aria-label="Download Chat"
-                  className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors"
+                  className="h-8 text-accent border-accent hover:text-accent-foreground hover:bg-accent/20 transition-colors"
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Chat
                 </Button>
-                <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
-              </div>
             )}
              {activeTab === "chat" && !showMultiQuizDialog && ( 
                 <DropdownMenu>
