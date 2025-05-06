@@ -12,6 +12,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        suppressHydrationWarning={true} // Added to prevent hydration mismatch errors from browser extensions
         {...props}
       />
     )
