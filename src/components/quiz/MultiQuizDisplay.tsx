@@ -74,7 +74,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
       }
     });
     const percentageScore = (score / questions.length) * 100;
-    const passed = percentageScore >= 70; // Updated pass rate to 70%
+    const passed = percentageScore >= 70; 
 
     return (
       <Card className="w-full max-w-2xl mx-auto my-4 bg-card border-border/70 shadow-lg">
@@ -89,12 +89,12 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             {passed ? (
               <>
                 <Image
-                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/congratulations-you-passed-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
-                  alt="Passing Grade AI Bot"
+                  src="https://storage.googleapis.com/idx-dev-artifacts/images/e410ff50-cb0f-48b4-84a9-ff41b48626ac/original_image.webp"
+                  alt="Congratulations You Passed Robot"
                   width={300}
-                  height={200}
-                  className="rounded-md shadow-lg"
-                  data-ai-hint="futuristic robot trophy"
+                  height={450} // Adjusted height to better fit the new image aspect ratio
+                  className="rounded-md shadow-lg object-contain"
+                  data-ai-hint="robot trophy"
                 />
                 <p className="text-2xl font-bold text-green-400">Congratulations! You Passed!</p>
                 <Award className="h-12 w-12 text-yellow-400" />
@@ -103,11 +103,11 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
               <>
                 <Image
                   src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/robot-encouraging-sad-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
-                  alt="Encouraging AI Bot"
+                  alt="Encouraging AI Bot - Try Again"
                   width={300}
                   height={200}
                   className="rounded-md shadow-lg"
-                  data-ai-hint="robot encouraging sad"
+                  data-ai-hint="robot encouraging"
                 />
                 <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
                 <p className="text-lg text-muted-foreground">A little more training is needed.</p>
