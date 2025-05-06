@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview A Genkit tool to find relevant learning resources for AI/ML topics.
  *

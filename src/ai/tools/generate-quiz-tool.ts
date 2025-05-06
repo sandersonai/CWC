@@ -1,26 +1,31 @@
-'use server';
 /**
  * @fileOverview A Genkit tool to generate a quiz question for an AI/ML topic.
  *
  * - generateQuizTool - The Genkit tool definition.
+ * - QuizQuestionSchema - The Zod schema for a quiz question.
+ * - QuizOptionSchema - The Zod schema for a quiz option.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const GenerateQuizInputSchema = z.object({
-  topic: z.string().describe('The AI/ML topic for which to generate a quiz question.'),
-});
-
-const QuizOptionSchema = z.object({
+export const QuizOptionSchema = z.object({
   text: z.string().describe('The text of the quiz option.'),
 });
+export type QuizOption = z.infer<typeof QuizOptionSchema>;
 
-const QuizQuestionSchema = z.object({
+
+export const QuizQuestionSchema = z.object({
   questionText: z.string().describe('The text of the quiz question.'),
   options: z.array(QuizOptionSchema).length(4).describe('An array of 4 possible answers.'),
   correctOptionIndex: z.number().int().min(0).max(3).describe('The 0-based index of the correct option in the options array.'),
   explanation: z.string().optional().describe('A brief explanation for the correct answer.'),
+});
+export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
+
+
+const GenerateQuizInputSchema = z.object({
+  topic: z.string().describe('The AI/ML topic for which to generate a quiz question.'),
 });
 
 const GenerateQuizOutputSchema = QuizQuestionSchema;
@@ -28,7 +33,7 @@ const GenerateQuizOutputSchema = QuizQuestionSchema;
 export const generateQuizTool = ai.defineTool(
   {
     name: 'generateQuizTool',
-    description: 'Generates a multiple-choice quiz question for a given AI/ML topic.',
+    description: 'Generates a multiple-choice quiz question for a given AI/ML topic, including options, the correct answer index, and an explanation.',
     inputSchema: GenerateQuizInputSchema,
     outputSchema: GenerateQuizOutputSchema,
   },

@@ -30,6 +30,7 @@ const SuggestedResourceSchema = z.object({
 const RespondToAiQueryOutputSchema = z.object({
   response: z.string().describe('The response to the AI query.'),
   suggestedResources: z.array(SuggestedResourceSchema).optional().describe('A list of suggested resources for further learning.'),
+  // canHaveQuiz is handled on the client-side and not part of the AI model's direct output schema
 });
 export type RespondToAiQueryOutput = z.infer<typeof RespondToAiQueryOutputSchema>;
 
@@ -40,7 +41,7 @@ export async function respondToAiQuery(input: RespondToAiQueryInput): Promise<Re
 const prompt = ai.definePrompt({
   name: 'respondToAiQueryPrompt',
   input: {schema: RespondToAiQueryInputSchema},
-  output: {schema: RespondToAiQueryOutputSchema},
+  output: {schema: RespondToAiQueryOutputSchema}, // Only define what the LLM should output
   tools: [findRelevantResourcesTool],
   prompt: `You are Christian, a helpful AI chatbot for the Sanderson AI Learning app. Your goal is to answer questions about AI and machine learning in a clear, educational, and engaging manner.
   Your knowledge base includes:
@@ -73,6 +74,8 @@ const respondToAiQueryFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
+    // The 'canHaveQuiz' property is a client-side concern, not part of the LLM output.
+    // It will be added in the client-side logic when processing this response.
     return output!;
   }
 );
