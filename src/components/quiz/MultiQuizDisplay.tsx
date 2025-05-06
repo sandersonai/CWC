@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -88,7 +89,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             {passed ? (
               <>
                 <Image
-                  src="https://picsum.photos/300/200"
+                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/congratulations-you-passed-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
                   alt="Passing Grade AI Bot"
                   width={300}
                   height={200}
@@ -204,3 +205,4 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
     </Card>
   );
 }
+
