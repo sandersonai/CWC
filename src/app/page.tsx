@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon } from 'lucide-react'; // Added Lightbulb, Link
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon, Trash2 } from 'lucide-react'; // Added Lightbulb, Link, Trash2
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -13,7 +13,6 @@ import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
 import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
-// import { generateQuiz } from '@/ai/flows/generate-quiz-flow'; // No longer needed for single quiz
 import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai/flows/generate-multi-question-quiz-flow';
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
@@ -36,7 +35,16 @@ import {
   DialogDescription as DialogDescriptionComponent,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/dialog"; // Added AlertDialog imports
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
@@ -99,8 +107,6 @@ export default function Home() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("chat");
-  // const [activeQuiz, setActiveQuiz] = useState<{ messageId: string; quizData: QuizData } | null>(null); // No longer needed for single quiz
-  // const [quizLoadingMessageId, setQuizLoadingMessageId] = useState<string | null>(null); // No longer needed for single quiz
 
   const [multiQuizQuestions, setMultiQuizQuestions] = useState<QuizData[]>([]);
   const [isMultiQuizLoading, setIsMultiQuizLoading] = useState(false);
@@ -120,7 +126,6 @@ export default function Home() {
 
   const handleSendMessage = async () => {
     if (!inputText.trim() && !uploadedImage) return;
-    // setActiveQuiz(null); // No longer needed
 
     const userMessageId = Date.now().toString();
     const userMessage: Message = {
@@ -154,7 +159,6 @@ export default function Home() {
         content: response.response,
         suggestedResources: response.suggestedResources || [],
         nlpAnalysis: response.nlpAnalysis,
-        // canHaveQuiz: true, // Retained in Message interface for now, but not used for button
       };
       setMessages((prev) => [...prev, botMessage]);
 
@@ -375,11 +379,6 @@ export default function Home() {
     }
   };
 
-  // handleGenerateSingleQuiz and handleSingleQuizSubmit are no longer needed
-  // const handleGenerateSingleQuiz = async (messageId: string, topic: string) => { ... }
-  // const handleSingleQuizSubmit = (isCorrect: boolean) => { ... }
-
-
   const handleStartMultiQuiz = async (difficulty: 'Easy' | 'Medium' | 'Hard') => {
     setMultiQuizDifficulty(difficulty);
     setIsMultiQuizLoading(true);
@@ -406,12 +405,32 @@ export default function Home() {
   };
 
   const handleMultiQuizComplete = (score: number, totalQuestions: number) => {
+    const percentageScore = (score / totalQuestions) * 100;
+    const passed = percentageScore >= 70;
+
     toast({
-      title: 'Quiz Complete!',
-      description: `You scored ${score} out of ${totalQuestions}.`,
-      className: 'bg-blue-500/10 border-blue-500',
+      title: passed ? 'Quiz Passed!' : 'Quiz Complete!',
+      description: `You scored ${score} out of ${totalQuestions}. (${percentageScore.toFixed(0)}%)`,
+      className: passed ? 'bg-green-500/10 border-green-500' : 'bg-blue-500/10 border-blue-500',
     });
   };
+
+  const handleClearChatAndData = () => {
+    setMessages([]);
+    setInputText('');
+    setUploadedImage(null);
+    setImagePrompt('');
+    setGeneratedImage(null);
+    setMultiQuizQuestions([]);
+    setShowMultiQuizDialog(false);
+    // Optionally, you might want to clear other states like activeTab if needed
+    // setActiveTab("chat"); 
+    toast({
+      title: "Chat Cleared",
+      description: "All messages, images, and quiz data have been cleared.",
+    });
+  };
+
 
   return (
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
@@ -448,7 +467,7 @@ export default function Home() {
             </DropdownMenu>
           </div>
 
-          <div className="flex items-center space-x-4"> {/* Increased spacing with space-x-4 */}
+          <div className="flex items-center space-x-4">
             {activeTab === "chat" && !showMultiQuizDialog && (
                 <Button
                   variant="outline" 
@@ -476,6 +495,33 @@ export default function Home() {
                     </DropdownMenuContent>
                 </DropdownMenu>
              )}
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        aria-label="Clear Chat and Data"
+                        className="h-8"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear Chat
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action will permanently delete all chat messages, uploaded images, generated images, and any active quiz data. This cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearChatAndData}>
+                            Yes, Clear All
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
           </div>
         </header>
 
@@ -504,15 +550,9 @@ export default function Home() {
                   <React.Fragment key={msg.id}>
                     <ChatMessage
                       {...msg}
-                      // onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined} // Removed single quiz generation
-                      // isQuizLoading={quizLoadingMessageId === msg.id} // Removed single quiz loading state
                       nlpAnalysis={msg.nlpAnalysis}
-                      messageId={msg.id} // Pass messageId, ChatMessage still expects it
+                      messageId={msg.id}
                     />
-                    {/* ActiveQuiz related display removed as single quiz is removed */}
-                    {/* {activeQuiz && activeQuiz.messageId === msg.id && (
-                      <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleSingleQuizSubmit} />
-                    )} */}
                   </React.Fragment>
                 ))}
                 {isLoading && (
