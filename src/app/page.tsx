@@ -191,15 +191,15 @@ export default function Home() {
       const margin = 40;
       let y = margin;
 
-      // Header
+      // Header - Use theme colors (e.g., primary or foreground)
       doc.setFontSize(18);
-      doc.setTextColor(40); // Dark gray/black
+      doc.setTextColor(180, 100, 50); // Example using HSL for primary (adjust as needed)
       doc.text("Sanderson AI Learning Chat History", pageWidth / 2, y, { align: 'center' });
       y += 25;
 
-      // Subtitle (Date)
+      // Subtitle (Date) - Use muted foreground
       doc.setFontSize(10);
-      doc.setTextColor(100); // Medium gray
+      doc.setTextColor(150); // Lighter gray - adjust based on theme
       doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth / 2, y, { align: 'center' });
       y += 30;
 
@@ -209,9 +209,13 @@ export default function Home() {
 
       messages.forEach((msg, index) => {
         const isUser = msg.role === 'user';
-        // Define colors based on role (can adjust these)
+        // Define colors based on role (using theme concepts)
         const prefix = isUser ? 'You: ' : 'Christian: ';
-        const textColor = isUser ? '#007bff' : '#333333'; // Blue for user, dark gray for assistant
+        // Use hex/rgb values corresponding to your theme's primary and foreground/card-foreground
+        const userColor = '#00FFFF'; // Example: Cyan (adjust to match theme)
+        const assistantColor = '#E0E0E0'; // Example: Light Gray (adjust to match theme)
+        const textColor = isUser ? userColor : assistantColor;
+
         let textToPrint = msg.content;
 
         // Indicate if an image was uploaded by the user
@@ -223,7 +227,7 @@ export default function Home() {
 
         // Use splitTextToSize for automatic wrapping
         const lines = doc.splitTextToSize(prefix + textToPrint, pageWidth - margin * 2);
-        const textHeight = lines.length * 10 * 1.4; // Estimate text height (fontSize * lineHeight * numLines)
+        const textHeight = lines.length * 10 * 1.4; // Estimate text height
 
         // Check if content exceeds page height, add new page if needed
         if (y + textHeight > pageHeight - margin) {
@@ -236,17 +240,16 @@ export default function Home() {
         doc.text(prefix, margin, y);
         const prefixWidth = doc.getTextWidth(prefix);
 
-        // Print Message Content (handle wrapping correctly)
+        // Print Message Content
         doc.setFont(undefined, 'normal');
-        // Draw text lines, removing prefix from the first line
         doc.text(lines.map((line, i) => i === 0 ? line.substring(prefix.length) : line), margin + prefixWidth, y);
 
 
         y += textHeight + 15; // Add spacing after message
 
-        // Add separator line between messages, if not the last message and there's space
+        // Add separator line between messages - use border color concept
         if (index < messages.length - 1 && y < pageHeight - margin - 10) {
-           doc.setDrawColor(220, 220, 220); // Light gray separator
+           doc.setDrawColor(60, 70, 90); // Example: Dark Muted Blue/Gray (adjust to match theme border)
            doc.setLineWidth(0.5);
            doc.line(margin, y, pageWidth - margin, y);
            y += 15; // Add spacing after separator
@@ -271,33 +274,27 @@ export default function Home() {
 
   return (
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
-       {/* Main container with background and text colors from theme */}
+       {/* Main container with futuristic background and text colors */}
        <div className="flex h-screen flex-col bg-background text-foreground">
-        {/* Header */}
+        {/* Header with futuristic styling */}
          <header className={cn(
-            "flex h-auto items-center justify-between border-b border-border bg-card px-4 py-3 shadow-md", // Use card background, theme border, and shadow
-             // Removed glow effects
+            "flex h-auto items-center justify-between border-b border-border/50 bg-background px-4 py-3 shadow-lg shadow-primary/10", // Use background, slightly transparent border, primary glow shadow
              )}>
            <div className="flex flex-col">
-             {/* Apply primary color to the main title */}
              <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
-             {/* Apply standard foreground color to the subtitle */}
-             <span className="text-sm text-foreground">Chat With Christian</span>
+             <span className="text-sm text-foreground/80">Chat With Christian</span> {/* Slightly muted foreground */}
            </div>
-           {/* Container for Download Button and Text */}
            <div className="flex flex-col items-center">
-                {/* Download Button */}
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleDownloadPdf}
                     disabled={messages.length === 0}
                     aria-label="Download Chat"
-                    className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full" // Use accent color, subtle hover
+                    className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors" // Use accent color, subtle hover
                 >
                     <Download className="h-4 w-4" />
                 </Button>
-                 {/* Small text below the button */}
                  <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
             </div>
         </header>
@@ -305,30 +302,26 @@ export default function Home() {
         {/* Main Content Area (Chat + Video) */}
         <div className="flex flex-1 overflow-hidden">
           {/* Chat Area */}
-          <div className="flex flex-1 flex-col border-r border-border"> {/* Added right border */}
-              {/* Scrollable chat messages area */}
+          <div className="flex flex-1 flex-col border-r border-border/50"> {/* Slightly transparent border */}
               <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
                 <div className="space-y-4 pb-4">
-                {/* Welcome message if no messages yet */}
                 {messages.length === 0 && !isLoading && (
                   <ChatMessage
                     role="assistant"
                     content="Welcome to Sanderson AI Learning! I'm Christian, your AI guide. Ask me anything about AI and machine learning, or upload an image for analysis."
                   />
                 )}
-                {/* Display existing messages */}
                 {messages.map((msg) => (
                   <ChatMessage key={msg.id} {...msg} />
                 ))}
-                {/* Show loading indicator for assistant response */}
                 {isLoading && (
                   <ChatMessage role="assistant" content="" isLoading={true} />
                 )}
                 </div>
               </ScrollArea>
 
-              {/* Chat Input Area */}
-              <div className="border-t border-border bg-card p-4 shadow-sm"> {/* Use card bg, theme border, subtle shadow */}
+              {/* Chat Input Area with futuristic style */}
+              <div className="border-t border-border/50 bg-background p-4 shadow-inner shadow-black/20"> {/* Use background, transparent border, inner shadow */}
                 <ChatInput
                   inputText={inputText}
                   setInputText={setInputText}
@@ -338,51 +331,54 @@ export default function Home() {
                   isLoading={isLoading}
                   triggerFileInput={triggerFileInput}
                   fileInputRef={fileInputRef}
-                  onImageUpload={handleImageUpload} // Pass handler
+                  onImageUpload={handleImageUpload}
                 />
               </div>
           </div>
 
-           {/* Video Generation Area */}
-            <div className="w-1/3 flex-shrink-0 border-l border-border bg-card p-4 flex flex-col space-y-4 shadow-sm"> {/* Define width, border, background, padding */}
-                <Card className="flex-1 flex flex-col"> {/* Make card fill space */}
+           {/* Video Generation Area with futuristic style */}
+            <div className="w-1/3 flex-shrink-0 border-l border-border/50 bg-background p-4 flex flex-col space-y-4 shadow-inner shadow-black/20"> {/* Consistent futuristic styling */}
+                <Card className="flex-1 flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10"> {/* Use card bg, slightly stronger border, accent glow shadow */}
                  <CardHeader>
-                    <CardTitle className="flex items-center text-lg text-primary"> {/* Title with icon */}
+                    <CardTitle className="flex items-center text-lg text-primary">
                       <Video className="mr-2 h-5 w-5" />
                       Generate Training Video (Image)
                     </CardTitle>
-                     <CardDescription className="text-muted-foreground"> {/* Description */}
+                     <CardDescription className="text-muted-foreground">
                         Enter a topic to generate a representative image (video generation placeholder).
                     </CardDescription>
                   </CardHeader>
-                   <CardContent className="flex-1 flex flex-col space-y-4"> {/* Content fills space */}
+                   <CardContent className="flex-1 flex flex-col space-y-4">
                       <Textarea
                         placeholder="e.g., What is supervised learning?"
                         value={videoPrompt}
                         onChange={(e) => setVideoPrompt(e.target.value)}
-                        className="flex-1 resize-none bg-input border-border focus:border-primary focus:ring-primary/50" // Style textarea
+                        className="flex-1 resize-none bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground" // Use theme colors
                         rows={4}
                         disabled={isVideoLoading}
-                        suppressHydrationWarning={true} // Added to prevent hydration mismatch errors from browser extensions
                       />
                        <Button
                           onClick={handleGenerateVideo}
                           disabled={isVideoLoading || !videoPrompt.trim()}
-                          className="bg-accent hover:bg-accent/90 text-accent-foreground w-full" // Use accent color
+                           className={cn(
+                              "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out", // Use accent color
+                              // Optional glow effect on hover/focus
+                              // "hover:shadow-accent/40 hover:shadow-md focus:shadow-accent/40 focus:shadow-md"
+                          )}
                         >
                           {isVideoLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           ) : (
-                             <ImageIcon className="mr-2 h-4 w-4" /> // Use Image icon as placeholder
+                             <ImageIcon className="mr-2 h-4 w-4" />
                           )}
-                          Generate Image {/* Label clearly indicates image generation */}
+                          Generate Image
                         </Button>
 
                        {/* Display Area for Generated Image or Loading State */}
-                        <div className="mt-4 flex-1 flex items-center justify-center border border-dashed border-border rounded-md bg-muted/50">
+                        <div className="mt-4 flex-1 flex items-center justify-center border border-dashed border-border/50 rounded-md bg-input/50"> {/* Use input background, dashed border */}
                             {isVideoLoading ? (
                                 <div className="flex flex-col items-center text-muted-foreground">
-                                     <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /> {/* Primary loader color */}
                                      <p>Generating image...</p>
                                 </div>
                             ) : generatedVideoImage ? (
@@ -393,14 +389,12 @@ export default function Home() {
                                         layout="fill"
                                         objectFit="contain"
                                         className="rounded-md"
-                                        data-ai-hint="generated video" // AI hint for image search
+                                        data-ai-hint="generated video"
                                     />
-                                    {/* Optional: Add Download Button for the Generated Image */}
-                                    {/* <Button size="sm" className="absolute bottom-2 right-2">Download</Button> */}
                                 </div>
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
-                                    <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border" /> {/* Placeholder icon */}
+                                    <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border/70" /> {/* Muted placeholder icon */}
                                     <p>Generated image will appear here.</p>
                                 </div>
                             )}
