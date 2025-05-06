@@ -24,7 +24,7 @@
     --muted-foreground: 210 30% 60%; /* Medium Gray */
 
     --accent: 270 100% 70%; /* Bright Purple/Violet */
-    --accent-foreground: 210 40% 98%; /* Almost White for contrast on Purple */
+    --accent-foreground: 0 0% 100%; /* Bright White for contrast on Purple */
 
     --destructive: 0 80% 60%; /* Vibrant Red */
     --destructive-foreground: 0 0% 100%; /* White */
@@ -67,7 +67,7 @@
     --muted: 220 10% 20%;
     --muted-foreground: 210 30% 60%;
     --accent: 270 100% 70%;
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 0 0% 100%; /* Bright White for contrast on Purple */
     --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 15% 30%;
@@ -112,3 +112,4 @@
 /* .glow-accent {
     box-shadow: 0 0 15px 2px hsl(var(--accent) / 0.5);
 } */
+

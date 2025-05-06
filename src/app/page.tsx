@@ -455,10 +455,16 @@ export default function Home() {
   };
 
   const isToolNew = (addedDateString: string) => {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const addedDate = new Date(addedDateString);
-    return addedDate >= sevenDaysAgo;
+    if (!addedDateString) return false; // Handle undefined or null dates
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const addedDate = new Date(addedDateString);
+        return addedDate >= sevenDaysAgo;
+    } catch (error) {
+        console.error("Error parsing date for isToolNew:", addedDateString, error);
+        return false; // Treat invalid dates as not new
+    }
   };
 
 
@@ -476,7 +482,7 @@ export default function Home() {
           <div className="flex-grow flex justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-8 text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground">
+                <Button variant="outline" className="h-8 text-accent-foreground bg-accent border-accent hover:bg-accent/90">
                   <Lightbulb className="mr-2 h-4 w-4" /> AI Tool Kit <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -512,7 +518,7 @@ export default function Home() {
                   onClick={handleDownloadPdf}
                   disabled={messages.length === 0}
                   aria-label="Download Chat"
-                  className="h-8 text-accent border-accent hover:text-accent-foreground hover:bg-accent/20 transition-colors"
+                  className="h-8 text-accent-foreground bg-accent border-accent hover:bg-accent/90 transition-colors"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Download Chat
@@ -521,7 +527,7 @@ export default function Home() {
              {activeTab === "chat" && !showMultiQuizDialog && ( 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-8 text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground">
+                        <Button variant="outline" className="h-8 text-accent-foreground bg-accent border-accent hover:bg-accent/90">
                         Take a Quiz <ChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -652,7 +658,7 @@ export default function Home() {
                       variant="outline"
                       onClick={handleDownloadImage}
                       disabled={!generatedImage || isImageLoading}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto text-accent-foreground bg-accent border-accent hover:bg-accent/90"
                       aria-label="Download Generated Image"
                     >
                       <Download className="mr-2 h-4 w-4" />
@@ -735,3 +741,4 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
