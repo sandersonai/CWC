@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Video, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react'; // Removed Video icon
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -11,7 +11,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
-import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
+import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt'; // Keep image flow
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -32,9 +32,9 @@ export default function Home() {
   const [inputText, setInputText] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePrompt, setImagePrompt] = useState(''); // Renamed from videoPrompt
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null); // Renamed from generatedVideoImage
-  const [isImageLoading, setIsImageLoading] = useState(false); // Renamed from isVideoLoading
+  const [imagePrompt, setImagePrompt] = useState(''); // State for image prompt
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null); // State for generated image URI
+  const [isImageLoading, setIsImageLoading] = useState(false); // State for image generation loading
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -109,7 +109,7 @@ export default function Home() {
     }
   };
 
-  // Renamed from handleGenerateVideoImage
+  // Function to handle image generation
   const handleGenerateImage = async () => {
     if (!imagePrompt.trim()) {
         toast({
@@ -120,12 +120,12 @@ export default function Home() {
         return;
     }
 
-    setIsImageLoading(true); // Renamed from setIsVideoLoading
-    setGeneratedImage(null); // Renamed from setGeneratedVideoImage
+    setIsImageLoading(true);
+    setGeneratedImage(null);
 
     try {
-        const response = await generateImageFromPrompt({ prompt: imagePrompt }); // Use imagePrompt directly
-        setGeneratedImage(response.imageDataUri); // Renamed from setGeneratedVideoImage
+        const response = await generateImageFromPrompt({ prompt: imagePrompt });
+        setGeneratedImage(response.imageDataUri);
         toast({
             title: 'Image Generated',
             description: 'Your image has been generated successfully.',
@@ -139,7 +139,7 @@ export default function Home() {
         variant: 'destructive',
       });
     } finally {
-      setIsImageLoading(false); // Renamed from setIsVideoLoading
+      setIsImageLoading(false);
     }
   };
 
@@ -308,7 +308,7 @@ export default function Home() {
                 <MessageSquare className="h-4 w-4" /> Chat
             </TabsTrigger>
             <TabsTrigger value="generate" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary rounded-md">
-                <ImageIcon className="h-4 w-4" /> Generate Image {/* Updated Icon and Text */}
+                <ImageIcon className="h-4 w-4" /> Generate Image
             </TabsTrigger>
           </TabsList>
 
@@ -348,60 +348,62 @@ export default function Home() {
            <TabsContent value="generate" className="flex-1 overflow-y-auto p-4 mt-0 data-[state=inactive]:hidden">
              {/* Use a flex container for the whole tab content to allow the card to grow */}
              <div className="flex h-full">
-                <Card className="w-full max-w-2xl mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10">
-                    <CardHeader>
+                <Card className="w-full max-w-2xl mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10 overflow-hidden"> {/* Added overflow-hidden */}
+                    <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3"> {/* Adjusted padding */}
                         <CardTitle className="flex items-center text-lg text-primary">
-                        <ImageIcon className="mr-2 h-5 w-5" /> {/* Updated Icon */}
-                         Generate Image from Prompt {/* Updated Title */}
+                        <ImageIcon className="mr-2 h-5 w-5" />
+                         Generate Image from Prompt
                         </CardTitle>
                         <CardDescription className="text-muted-foreground">
-                            Enter a topic or description to generate an image using AI. {/* Updated Description */}
+                            Enter a topic or description to generate an image using AI.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col space-y-4 p-4 pt-0 flex-grow"> {/* Use flex-grow here */}
+                    {/* Removed padding top (pt-0) from CardContent, added bottom padding */}
+                    <CardContent className="flex flex-col space-y-4 px-4 pb-4 md:px-6 md:pb-6 flex-grow">
                         <Textarea
-                            placeholder="e.g., A futuristic cityscape at sunset." // Updated placeholder
-                            value={imagePrompt} // Renamed from videoPrompt
-                            onChange={(e) => setImagePrompt(e.target.value)} // Renamed from setVideoPrompt
-                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none" // Removed flex-grow
+                            placeholder="e.g., A futuristic cityscape at sunset."
+                            value={imagePrompt}
+                            onChange={(e) => setImagePrompt(e.target.value)}
+                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none"
                             rows={4}
-                            disabled={isImageLoading} // Renamed from isVideoLoading
+                            disabled={isImageLoading}
                         />
                         <Button
-                            onClick={handleGenerateImage} // Renamed from handleGenerateVideoImage
-                            disabled={isImageLoading || !imagePrompt.trim()} // Renamed state variables
+                            onClick={handleGenerateImage}
+                            disabled={isImageLoading || !imagePrompt.trim()}
                             className={cn(
                                 "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out",
                             )}
                         >
-                            {isImageLoading ? ( // Renamed from isVideoLoading
+                            {isImageLoading ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                                 <ImageIcon className="mr-2 h-4 w-4" />
                             )}
-                            Generate Image {/* Updated Button Text */}
+                            Generate Image
                         </Button>
 
                         {/* Image container: Use aspect-ratio and relative positioning */}
-                        <div className="relative w-full aspect-video mt-4 border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center">
-                            {isImageLoading ? ( // Renamed from isVideoLoading
+                        {/* Removed top margin (mt-4) as CardContent provides spacing */}
+                        <div className="relative w-full aspect-video border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center">
+                            {isImageLoading ? (
                                 <div className="flex flex-col items-center text-muted-foreground">
                                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                                    <p>Generating image...</p> {/* Updated Text */}
+                                    <p>Generating image...</p>
                                 </div>
-                            ) : generatedImage ? ( // Renamed from generatedVideoImage
+                            ) : generatedImage ? (
                                 <Image
-                                    src={generatedImage} // Renamed from generatedVideoImage
-                                    alt="Generated image" // Updated Alt Text
-                                    layout="fill" // Use fill layout
-                                    objectFit="contain" // Contain ensures the whole image is visible
+                                    src={generatedImage}
+                                    alt="Generated image"
+                                    layout="fill"
+                                    objectFit="contain"
                                     className="rounded-md"
-                                    data-ai-hint="generated image" // Updated hint
+                                    data-ai-hint="generated image"
                                 />
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
                                     <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border/70" />
-                                    <p>Generated image will appear here.</p> {/* Updated Text */}
+                                    <p>Generated image will appear here.</p>
                                 </div>
                             )}
                         </div>
