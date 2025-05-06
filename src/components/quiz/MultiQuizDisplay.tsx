@@ -3,13 +3,12 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-// import Image from 'next/image'; // Removed Image import
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, RotateCcw, Trophy, Award, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Trophy, HelpCircle, PartyPopper } from 'lucide-react'; // Added PartyPopper
 import type { QuizData } from '@/components/chat/QuizDisplay'; // Re-use QuizData interface
 import { Progress } from '@/components/ui/progress';
 
@@ -88,16 +87,15 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
           <div className="flex flex-col items-center space-y-4">
             {passed ? (
               <>
-                {/* Image removed */}
-                <p className="text-2xl font-bold text-green-400">Congratulations! You Passed!</p>
-                <Award className="h-12 w-12 text-yellow-400" />
+                <PartyPopper className="h-12 w-12 text-yellow-400" />
+                <p className="text-2xl font-bold text-green-400">Congratulations You Passed!</p>
+                <p className="text-lg text-muted-foreground">You are becoming An AI Pro</p>
               </>
             ) : (
               <>
-                {/* Image removed */}
+                <HelpCircle className="h-12 w-12 text-blue-400" />
                 <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
                 <p className="text-lg text-muted-foreground">A little more training is needed.</p>
-                <HelpCircle className="h-12 w-12 text-blue-400" />
               </>
             )}
           </div>
