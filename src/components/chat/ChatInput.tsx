@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -123,7 +124,7 @@ export function ChatInput({
                     "border border-accent/50" 
                 )}
             >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Send className="h-5 w-5 text-white" />}
             </Button>
          </TooltipTrigger>
         <TooltipContent>
@@ -134,3 +135,4 @@ export function ChatInput({
     </TooltipProvider>
   );
 }
+
