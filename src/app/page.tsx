@@ -15,7 +15,7 @@ import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
@@ -109,11 +109,11 @@ export default function Home() {
     }
   };
 
-  const handleGenerateVideo = async () => {
+  const handleGenerateVideoImage = async () => {
     if (!videoPrompt.trim()) {
         toast({
             title: 'Empty Prompt',
-            description: 'Please enter a description for the video.',
+            description: 'Please enter a description for the video concept.',
             variant: 'destructive',
         });
         return;
@@ -123,20 +123,20 @@ export default function Home() {
     setGeneratedVideoImage(null);
 
     try {
-        // Add context for educational/training video style
-        const fullPrompt = `Generate an image representing an educational training video about: "${videoPrompt}". Style: cinematic, educational, high-quality.`;
+        // Prompt asks for an image *representing* a 60-second training video.
+        const fullPrompt = `Generate a single, high-quality image representing a concept for a 60-second educational training video about: "${videoPrompt}". Style: cinematic, educational, clear visuals. This image should serve as a placeholder thumbnail or concept art for the video.`;
         const response = await generateImageFromPrompt({ prompt: fullPrompt });
         setGeneratedVideoImage(response.imageDataUri);
         toast({
-            title: 'Image Generated',
-            description: 'An image representing your video concept has been created.',
+            title: 'Video Concept Image Generated',
+            description: 'An image representing your video concept has been created. Actual video generation is not supported via free APIs currently.',
         });
 
     } catch (error) {
       console.error('Error generating image:', error);
       toast({
-        title: 'Generation Error',
-        description: `Failed to generate the image. ${error instanceof Error ? error.message : 'Please try again.'}`,
+        title: 'Image Generation Error',
+        description: `Failed to generate the concept image. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
     } finally {
@@ -309,7 +309,7 @@ export default function Home() {
                 <MessageSquare className="h-4 w-4" /> Chat
             </TabsTrigger>
             <TabsTrigger value="generate" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary rounded-md">
-                <Video className="h-4 w-4" /> Generate
+                <Video className="h-4 w-4" /> Generate Concept
             </TabsTrigger>
           </TabsList>
 
@@ -353,15 +353,15 @@ export default function Home() {
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-primary">
                         <Video className="mr-2 h-5 w-5" />
-                        Generate Training Video (Image)
+                         Generate Training Video Concept (Image)
                         </CardTitle>
                         <CardDescription className="text-muted-foreground">
-                            Enter a topic to generate a representative image (video generation placeholder).
+                            Enter a topic to generate a representative image for a 60-second training video concept. (Note: Actual video generation is not available via free APIs at this time.)
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col space-y-4 p-4 pt-0 flex-grow"> {/* Use flex-grow here */}
                         <Textarea
-                            placeholder="e.g., What is supervised learning?"
+                            placeholder="e.g., Explain the concept of neural networks briefly."
                             value={videoPrompt}
                             onChange={(e) => setVideoPrompt(e.target.value)}
                             className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none" // Removed flex-grow
@@ -369,7 +369,7 @@ export default function Home() {
                             disabled={isVideoLoading}
                         />
                         <Button
-                            onClick={handleGenerateVideo}
+                            onClick={handleGenerateVideoImage}
                             disabled={isVideoLoading || !videoPrompt.trim()}
                             className={cn(
                                 "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out",
@@ -380,7 +380,7 @@ export default function Home() {
                             ) : (
                                 <ImageIcon className="mr-2 h-4 w-4" />
                             )}
-                            Generate Image
+                            Generate Concept Image
                         </Button>
 
                         {/* Image container: Use aspect-ratio and relative positioning */}
@@ -388,21 +388,21 @@ export default function Home() {
                             {isVideoLoading ? (
                                 <div className="flex flex-col items-center text-muted-foreground">
                                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                                    <p>Generating image...</p>
+                                    <p>Generating concept image...</p>
                                 </div>
                             ) : generatedVideoImage ? (
                                 <Image
                                     src={generatedVideoImage}
-                                    alt="Generated video representation"
+                                    alt="Generated video concept representation"
                                     layout="fill" // Use fill layout
                                     objectFit="contain" // Contain ensures the whole image is visible
                                     className="rounded-md"
-                                    data-ai-hint="generated video"
+                                    data-ai-hint="generated video concept" // Updated hint
                                 />
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
                                     <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border/70" />
-                                    <p>Generated image will appear here.</p>
+                                    <p>Generated video concept image will appear here.</p>
                                 </div>
                             )}
                         </div>
@@ -415,5 +415,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
-    
