@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react'; // Removed video/film icons
+import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -11,7 +11,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
-import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt'; // Keep image flow
+import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -121,7 +121,8 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
-    setGeneratedImage(null);
+    // Do not clear generatedImage here, keep the previous image visible while loading
+    // setGeneratedImage(null);
 
     try {
         console.log("Calling generateImageFromPrompt with prompt:", imagePrompt);
@@ -133,7 +134,7 @@ export default function Home() {
         }
 
         setGeneratedImage(response.imageDataUri);
-        console.log("Generated image URI set:", response.imageDataUri); // Log the URI being set
+        console.log("Generated image URI set:", response.imageDataUri);
         toast({
             title: 'Image Generated',
             description: 'Your image has been generated successfully.',
@@ -390,7 +391,6 @@ export default function Home() {
           </TabsContent>
 
            <TabsContent value="generate" className="flex-1 overflow-y-auto p-4 mt-0 data-[state=inactive]:hidden">
-             {/* Increased max-w and added min-h for a larger card */}
              <div className="flex h-full items-center justify-center">
                 <Card className="w-full max-w-3xl lg:max-w-4xl min-h-[70vh] mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10 overflow-hidden">
                     <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3">
@@ -398,18 +398,15 @@ export default function Home() {
                         <ImageIcon className="mr-2 h-5 w-5" />
                          Generate Image from Prompt
                         </CardTitle>
-                        <CardDescription className="text-muted-foreground">
-                            Enter a topic or description to generate an image using AI.
-                        </CardDescription>
+                        {/* Removed CardDescription */}
                     </CardHeader>
-                    {/* Adjusted padding and added flex-grow */}
                     <CardContent className="flex flex-col space-y-4 px-4 pb-4 md:px-6 md:pb-6 flex-grow">
                         <Textarea
                             placeholder="e.g., A futuristic cityscape at sunset."
                             value={imagePrompt}
                             onChange={(e) => setImagePrompt(e.target.value)}
                             className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none"
-                            rows={3} // Slightly reduced rows as card is bigger
+                            rows={3}
                             disabled={isImageLoading}
                         />
                          <div className="flex flex-col sm:flex-row gap-2">
@@ -428,10 +425,10 @@ export default function Home() {
                                 Generate Image
                             </Button>
                              <Button
-                                variant="outline" // Secondary action style
+                                variant="outline"
                                 onClick={handleDownloadImage}
-                                disabled={!generatedImage || isImageLoading}
-                                className="w-full sm:w-auto" // Added width control
+                                disabled={!generatedImage} // Only disable if no image exists
+                                className="w-full sm:w-auto"
                                 aria-label="Download Generated Image"
                             >
                                 <Download className="mr-2 h-4 w-4" />
@@ -439,26 +436,34 @@ export default function Home() {
                             </Button>
                         </div>
 
-                        {/* Image container: Use flex-grow and relative positioning */}
-                        <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]"> {/* Increased min-height */}
-                            {isImageLoading ? (
+                        {/* Image container */}
+                        <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]">
+                            {isImageLoading && !generatedImage && ( // Show loader only if no previous image exists
                                 <div className="flex flex-col items-center text-muted-foreground">
-                                    <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" /> {/* Larger loader */}
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
                                     <p>Generating image...</p>
                                 </div>
-                            ) : generatedImage ? (
+                            )}
+                            {generatedImage && ( // Always show the image if it exists
                                 <Image
                                     src={generatedImage}
                                     alt="Generated image"
                                     layout="fill"
-                                    objectFit="contain" // Use contain to show the whole image
-                                    className="rounded-md" // Removed p-1
-                                    data-ai-hint="generated art" // Changed hint
+                                    objectFit="contain"
+                                    className="rounded-md"
+                                    data-ai-hint="generated art"
                                 />
-                            ) : (
+                            )}
+                            {!isImageLoading && !generatedImage && ( // Show placeholder only if not loading and no image
                                 <div className="text-center text-muted-foreground p-4">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" /> {/* Larger placeholder icon */}
+                                    <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" />
                                     <p>Generated image will appear here.</p>
+                                </div>
+                            )}
+                            {/* Optional: Overlay loader on top of existing image while loading new one */}
+                            {isImageLoading && generatedImage && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
                                 </div>
                             )}
                         </div>
@@ -471,4 +476,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
