@@ -1,11 +1,11 @@
 
 import * as React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardHeader, CardTitle, CardDescription
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { User, Bot, Loader2, Link as LinkIcon, BrainCircuit, BarChart3, Brain } from 'lucide-react'; // Added BarChart3, Brain
-import { Button } from '@/components/ui/button'; // Added import for Button
-import Image from 'next/image'; // Added Image import
+import { User, Bot, Loader2, Link as LinkIcon, BarChart3, Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface SuggestedResource {
   title: string;
@@ -24,13 +24,10 @@ export interface Message {
   image?: string;
   isLoading?: boolean;
   suggestedResources?: SuggestedResource[];
-  nlpAnalysis?: NlpAnalysisData; // New: To store NLP analysis results
-  canHaveQuiz?: boolean;
+  nlpAnalysis?: NlpAnalysisData;
 }
 
 interface ChatMessageProps extends Message {
-  onGenerateQuiz?: (messageId: string, topic: string) => void;
-  isQuizLoading?: boolean;
   messageId: string;
 }
 
@@ -40,30 +37,24 @@ export function ChatMessage({
   image,
   isLoading = false,
   suggestedResources = [],
-  nlpAnalysis, // Added nlpAnalysis prop
-  canHaveQuiz = false, // Retained prop for potential future use, but button is removed
-  onGenerateQuiz, // Retained prop for potential future use
-  isQuizLoading = false, // Retained prop for potential future use
+  nlpAnalysis,
   messageId,
 }: ChatMessageProps) {
   const isUser = role === 'user';
 
-  // handleQuizButtonClick is no longer needed as the button is removed
-  // const handleQuizButtonClick = () => {
-  //   if (onGenerateQuiz && content) {
-  //     const topic = content.substring(0, 100);
-  //     onGenerateQuiz(messageId, topic);
-  //   }
-  // };
-
   return (
     <div className={cn('flex items-start space-x-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <Avatar className="h-8 w-8 border border-border bg-background">
-          <AvatarFallback className="bg-accent text-accent-foreground">
-            <Bot className="h-5 w-5" />
-          </AvatarFallback>
-        </Avatar>
+        <div className="relative flex flex-col items-center">
+          <Avatar className="h-8 w-8 border border-border bg-background">
+            <AvatarFallback className="bg-accent text-accent-foreground">
+              <Bot className="h-5 w-5" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="mt-1 text-xs font-bold text-white">
+            CWC
+          </span>
+        </div>
       )}
       <Card className={cn(
         'max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl shadow-lg',
@@ -139,7 +130,6 @@ export function ChatMessage({
               </ul>
             </div>
           )}
-          {/* "Test Your Knowledge" button removed from here */}
         </CardContent>
       </Card>
       {isUser && (
@@ -152,4 +142,3 @@ export function ChatMessage({
     </div>
   );
 }
-
