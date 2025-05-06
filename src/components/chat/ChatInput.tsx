@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Send, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Paperclip, Send, X, Loader2 } from 'lucide-react'; // Removed ImageIcon as preview shows image directly
 import Image from 'next/image';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'; // Keep for other buttons if needed
 
 interface ChatInputProps {
   inputText: string;
@@ -49,7 +49,7 @@ export function ChatInput({
 
 
   return (
-    <TooltipProvider>
+    <TooltipProvider> {/* Keep provider if other tooltips exist */}
     <div className="flex items-center space-x-2">
        <Tooltip>
         <TooltipTrigger asChild>
@@ -115,8 +115,9 @@ export function ChatInput({
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
+                 className={isLoading ? '' : 'text-black'} // Apply black color only when not loading
             >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 text-foreground" />}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </Button>
          </TooltipTrigger>
         <TooltipContent>

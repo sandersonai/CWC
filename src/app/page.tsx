@@ -11,8 +11,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
-import { Button } from '@/components/ui/button'; // Import Button
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'; // Import Tooltip components
+import { Button } from '@/components/ui/button';
 import jsPDF from 'jspdf';
 
 interface Message {
@@ -157,7 +156,8 @@ export default function Home() {
 
         // Calculate text dimensions and split if necessary
         const lines = doc.splitTextToSize(textToPrint, pageWidth - margin * 2);
-        const textHeight = lines.length * doc.getTextDimensions('M').h * 1.2; // Estimate height with line spacing
+        // Estimate height with line spacing - use getTextDimensions for better accuracy
+        const textHeight = lines.length * doc.getTextDimensions('M').h * 1.2;
 
         // Check if content fits on the current page, add new page if not
         if (y + textHeight > pageHeight - margin) {
@@ -199,24 +199,19 @@ export default function Home() {
         {/* Header */}
         <header className="flex h-16 items-center justify-between border-b bg-background px-4 shadow-sm">
           <h1 className="text-xl font-semibold text-foreground">Sanderson AI Learning - Chat with Christian</h1>
-           <TooltipProvider>
-             <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleDownloadPdf}
-                        disabled={messages.length === 0}
-                        aria-label="Download chat as PDF"
-                    >
-                        <Download className="h-5 w-5 text-foreground" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Download Chat (PDF)</p>
-                </TooltipContent>
-              </Tooltip>
-           </TooltipProvider>
+           <div className="flex flex-col items-center">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDownloadPdf}
+                    disabled={messages.length === 0}
+                    aria-label="Download Chat"
+                    className="h-8 w-8" // Adjusted size for potentially smaller space
+                >
+                    <Download className="h-4 w-4 text-foreground" />
+                </Button>
+                 <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
+            </div>
         </header>
 
         {/* Chat Area */}
@@ -249,4 +244,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
