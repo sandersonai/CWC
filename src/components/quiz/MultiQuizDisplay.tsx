@@ -8,9 +8,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, RotateCcw, Trophy, HelpCircle, PartyPopper } from 'lucide-react'; // Added PartyPopper
+import { ChevronLeft, ChevronRight, RotateCcw, Trophy, Frown, PartyPopper } from 'lucide-react'; // Added Frown, PartyPopper
 import type { QuizData } from '@/components/chat/QuizDisplay'; // Re-use QuizData interface
 import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
 
 interface MultiQuizDisplayProps {
   questions: QuizData[];
@@ -93,9 +94,8 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
               </>
             ) : (
               <>
-                <HelpCircle className="h-12 w-12 text-blue-400" />
-                <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
-                <p className="text-lg text-muted-foreground">A little more training is needed.</p>
+                <Frown className="h-12 w-12 text-blue-400" />
+                <p className="text-xl font-semibold text-blue-300">Oh No! You did well but you need a bit more training.</p>
               </>
             )}
           </div>
