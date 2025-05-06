@@ -90,9 +90,9 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
               <>
                 <Image
                   src="https://storage.googleapis.com/idx-dev-artifacts/images/e410ff50-cb0f-48b4-84a9-ff41b48626ac/original_image.webp"
-                  alt="Congratulations You Passed Robot"
+                  alt="Congratulations You Passed Robot with Trophy"
                   width={300}
-                  height={450} // Adjusted height to better fit the new image aspect ratio
+                  height={450} 
                   className="rounded-md shadow-lg object-contain"
                   data-ai-hint="robot trophy"
                 />
@@ -102,12 +102,12 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             ) : (
               <>
                 <Image
-                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/robot-encouraging-sad-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
-                  alt="Encouraging AI Bot - Try Again"
+                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/robot-sad-sign-700x1000.jpg?w=300&h=450&fit=crop&auto=format"
+                  alt="Sad Robot with Sign - Try Again"
                   width={300}
-                  height={200}
-                  className="rounded-md shadow-lg"
-                  data-ai-hint="robot encouraging"
+                  height={450}
+                  className="rounded-md shadow-lg object-contain"
+                  data-ai-hint="robot sad sign"
                 />
                 <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
                 <p className="text-lg text-muted-foreground">A little more training is needed.</p>
