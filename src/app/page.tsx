@@ -3,11 +3,11 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3 } from 'lucide-react'; // Added Brain, BarChart3
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb } from 'lucide-react'; // Added Lightbulb
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatMessage, Message, NlpAnalysisData } from '@/components/chat/ChatMessage'; // Updated Message import
+import { ChatMessage, Message, NlpAnalysisData } from '@/components/chat/ChatMessage';
 import { QuizDisplay, QuizData } from '@/components/chat/QuizDisplay';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
@@ -18,26 +18,62 @@ import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardDescription
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription as DialogDescriptionComponent, // Renamed to avoid conflict
+  DialogDescription as DialogDescriptionComponent,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
+
+const aiTools = [
+  {
+    name: "TensorFlow Playground",
+    url: "https://playground.tensorflow.org/",
+    description: "Visualize and experiment with neural networks in your browser.",
+  },
+  {
+    name: "Leonardo.Ai",
+    url: "https://leonardo.ai/",
+    description: "Free tier for AI image generation and creative tools.",
+  },
+  {
+    name: "Hugging Face - Spaces",
+    url: "https://huggingface.co/spaces",
+    description: "Explore and run various AI models and demos.",
+  },
+  {
+    name: "Perplexity AI",
+    url: "https://www.perplexity.ai/",
+    description: "Conversational AI search engine with cited sources.",
+  },
+  {
+    name: "Kaggle",
+    url: "https://www.kaggle.com/",
+    description: "Platform for data science and machine learning competitions, datasets, and notebooks.",
+  },
+  {
+    name: "Google Colab",
+    url: "https://colab.research.google.com/",
+    description: "Free Jupyter notebook environment that requires no setup and runs entirely in the cloud.",
+  }
+];
+
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -94,7 +130,7 @@ export default function Home() {
           imageDataUri: uploadedImage,
           question: inputText || 'Analyze this image and explain any relevant AI concepts.',
         });
-        response = { response: analysisResponse.answer, suggestedResources: [] };
+        response = { response: analysisResponse.answer, suggestedResources: [], nlpAnalysis: undefined };
       } else {
         response = await respondToAiQuery({
           query: inputText,
@@ -105,8 +141,8 @@ export default function Home() {
         role: 'assistant',
         content: response.response,
         suggestedResources: response.suggestedResources || [],
-        nlpAnalysis: response.nlpAnalysis, // Add NLP analysis data
-        canHaveQuiz: true, // AI responses can have quizzes
+        nlpAnalysis: response.nlpAnalysis,
+        canHaveQuiz: true,
       };
       setMessages((prev) => [...prev, botMessage]);
 
@@ -139,15 +175,13 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
-    // Do not clear generatedImage here to keep it visible during regeneration.
-    // setGeneratedImage(null); 
 
     try {
       const response = await generateImageFromPrompt({ prompt: imagePrompt });
       if (!response?.imageDataUri) {
         throw new Error('Image generation failed: No image data returned.');
       }
-      setGeneratedImage(response.imageDataUri); // Update with the new image
+      setGeneratedImage(response.imageDataUri);
       toast({
         title: 'Image Generated',
         description: 'Your image has been generated successfully.',
@@ -159,7 +193,6 @@ export default function Home() {
         description: `Failed to generate the image. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
-      // Do not clear generatedImage on error, keep the old one visible if it exists
     } finally {
       setIsImageLoading(false);
     }
@@ -338,7 +371,7 @@ export default function Home() {
     setActiveQuiz(null);
     setQuizLoadingMessageId(messageId);
     try {
-      const quizData = await generateQuiz({ topic }); // generateQuiz expects GenerateQuizInput
+      const quizData = await generateQuiz({ topic });
       setActiveQuiz({ messageId, quizData });
     } catch (error) {
       console.error('Error generating quiz:', error);
@@ -364,8 +397,8 @@ export default function Home() {
   const handleStartMultiQuiz = async (difficulty: 'Easy' | 'Medium' | 'Hard') => {
     setMultiQuizDifficulty(difficulty);
     setIsMultiQuizLoading(true);
-    setMultiQuizQuestions([]); // Clear previous questions
-    setShowMultiQuizDialog(true); // Open dialog immediately to show loader
+    setMultiQuizQuestions([]);
+    setShowMultiQuizDialog(true);
     try {
       const response: GenerateMultiQuestionQuizOutput = await generateMultiQuestionQuiz({ difficulty, numberOfQuestions: 7 });
       if (response.questions && response.questions.length > 0) {
@@ -380,7 +413,7 @@ export default function Home() {
         description: `Failed to generate a ${difficulty.toLowerCase()} quiz. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
-      setShowMultiQuizDialog(false); // Close dialog on error
+      setShowMultiQuizDialog(false);
     } finally {
       setIsMultiQuizLoading(false);
     }
@@ -390,9 +423,8 @@ export default function Home() {
     toast({
       title: 'Quiz Complete!',
       description: `You scored ${score} out of ${totalQuestions}.`,
-      className: 'bg-blue-500/10 border-blue-500', // Custom color for quiz completion
+      className: 'bg-blue-500/10 border-blue-500',
     });
-    // setShowMultiQuizDialog(false); // Keep dialog open to show results, or close with a delay
   };
 
   return (
@@ -405,6 +437,27 @@ export default function Home() {
             <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
             <span className="text-sm text-foreground/80">Chat With Christian</span>
           </div>
+          
+          <div className="flex-grow flex justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-8 text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground">
+                  <Lightbulb className="mr-2 h-4 w-4" /> AI Tool Kit <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-72 bg-popover border-border">
+                <DropdownMenuLabel className="text-center">Free AI Tools for Beginners</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {aiTools.map((tool) => (
+                  <DropdownMenuItem key={tool.name} onSelect={() => window.open(tool.url, '_blank', 'noopener,noreferrer')} className="hover:bg-accent/20 flex flex-col items-start">
+                    <span className="font-semibold">{tool.name}</span>
+                    <span className="text-xs text-muted-foreground">{tool.description}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="flex items-center space-x-2">
             {activeTab === "chat" && !showMultiQuizDialog && (
               <div className="flex flex-col items-center">
@@ -465,7 +518,7 @@ export default function Home() {
                       {...msg}
                       onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined}
                       isQuizLoading={quizLoadingMessageId === msg.id}
-                      nlpAnalysis={msg.nlpAnalysis} // Pass NLP analysis data
+                      nlpAnalysis={msg.nlpAnalysis}
                     />
                     {activeQuiz && activeQuiz.messageId === msg.id && (
                       <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleSingleQuizSubmit} />
