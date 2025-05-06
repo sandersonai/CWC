@@ -53,45 +53,59 @@ const aiTools = [
     name: "TensorFlow Playground",
     url: "https://playground.tensorflow.org/",
     description: "Visualize and experiment with neural networks in your browser.",
-    icon: <BrainCircuit className="h-4 w-4 text-primary" />
+    icon: <BrainCircuit className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Leonardo.Ai",
     url: "https://leonardo.ai/",
     description: "Free tier for AI image generation and creative tools.",
-    icon: <ImageIcon className="h-4 w-4 text-primary" />
+    icon: <ImageIcon className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Hugging Face - Spaces",
     url: "https://huggingface.co/spaces",
     description: "Explore and run various AI models and demos.",
-    // Using a generic brain icon as a placeholder for a specific Hugging Face SVG if not readily available or complex
-    icon: <Brain className="h-4 w-4 text-primary" />
+    icon: <Brain className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Perplexity AI",
     url: "https://www.perplexity.ai/",
     description: "Conversational AI search engine with cited sources.",
-    icon: <MessageSquare className="h-4 w-4 text-primary" />
+    icon: <MessageSquare className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Kaggle",
     url: "https://www.kaggle.com/",
     description: "Platform for data science, ML competitions, datasets, and notebooks.",
-    icon: <BarChart3 className="h-4 w-4 text-primary" />
+    icon: <BarChart3 className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Google Colab",
     url: "https://colab.research.google.com/",
     description: "Free Jupyter notebook environment in the cloud.",
-    icon: <Brain className="h-4 w-4 text-primary" />
+    icon: <Brain className="h-4 w-4 text-primary" />,
+    isNew: false,
   },
   {
     name: "Google Cloud AI (Free Tier)",
     url: "https://cloud.google.com/free/docs/free-cloud-features#ai_and_machine_learning",
     description: "Access various Google Cloud AI services with free tier limits.",
-    icon: <BrainCircuit className="h-4 w-4 text-primary" /> // Using BrainCircuit as a generic AI icon
+    icon: <BrainCircuit className="h-4 w-4 text-primary" />,
+    isNew: true, // Marked as new for demonstration
   },
+  // Example of more tools if the list were to grow (not displayed due to slice(0,7))
+  // {
+  //   name: "Another New Tool",
+  //   url: "https://example.com/another-tool",
+  //   description: "This tool would be shown if the list expands.",
+  //   icon: <Lightbulb className="h-4 w-4 text-primary" />,
+  //   isNew: true,
+  // }
 ];
 
 
@@ -464,11 +478,18 @@ export default function Home() {
               <DropdownMenuContent align="center" className="w-80 bg-popover border-border">
                 <DropdownMenuLabel className="text-center text-sm font-medium text-foreground">Free AI Tools for Beginners</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border/50" />
-                {aiTools.map((tool) => (
+                {aiTools.slice(0, 7).map((tool) => (
                   <DropdownMenuItem key={tool.name} onSelect={() => window.open(tool.url, '_blank', 'noopener,noreferrer')} className="hover:bg-accent/20 focus:bg-accent/20 flex items-start p-2 space-x-2">
                     <div className="flex-shrink-0 mt-0.5">{tool.icon}</div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-foreground">{tool.name}</span>
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium text-foreground">{tool.name}</span>
+                        {tool.isNew && (
+                          <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-accent text-accent-foreground rounded-full">
+                            NEW
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground">{tool.description}</span>
                     </div>
                      <LinkIcon className="h-3 w-3 text-muted-foreground/70 ml-auto self-center" />
@@ -709,3 +730,5 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
+    
