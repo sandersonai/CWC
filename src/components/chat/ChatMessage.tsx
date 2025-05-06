@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { cn } from '@/lib/utils';
 import { User, Bot, Loader2, Link as LinkIcon, BrainCircuit, BarChart3, Brain } from 'lucide-react'; // Added BarChart3, Brain
 import { Button } from '@/components/ui/button'; // Added import for Button
+import Image from 'next/image'; // Added Image import
 
 interface SuggestedResource {
   title: string;
@@ -40,19 +41,20 @@ export function ChatMessage({
   isLoading = false,
   suggestedResources = [],
   nlpAnalysis, // Added nlpAnalysis prop
-  canHaveQuiz = false,
-  onGenerateQuiz,
-  isQuizLoading = false,
+  canHaveQuiz = false, // Retained prop for potential future use, but button is removed
+  onGenerateQuiz, // Retained prop for potential future use
+  isQuizLoading = false, // Retained prop for potential future use
   messageId,
 }: ChatMessageProps) {
   const isUser = role === 'user';
 
-  const handleQuizButtonClick = () => {
-    if (onGenerateQuiz && content) {
-      const topic = content.substring(0, 100);
-      onGenerateQuiz(messageId, topic);
-    }
-  };
+  // handleQuizButtonClick is no longer needed as the button is removed
+  // const handleQuizButtonClick = () => {
+  //   if (onGenerateQuiz && content) {
+  //     const topic = content.substring(0, 100);
+  //     onGenerateQuiz(messageId, topic);
+  //   }
+  // };
 
   return (
     <div className={cn('flex items-start space-x-3', isUser ? 'justify-end' : 'justify-start')}>
@@ -137,24 +139,7 @@ export function ChatMessage({
               </ul>
             </div>
           )}
-          {!isUser && !isLoading && canHaveQuiz && onGenerateQuiz && (
-            <div className="mt-3 pt-2 border-t border-border/50">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleQuizButtonClick}
-                disabled={isQuizLoading}
-                className="w-full text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground"
-              >
-                {isQuizLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <BrainCircuit className="mr-2 h-4 w-4" />
-                )}
-                Test Your Knowledge
-              </Button>
-            </div>
-          )}
+          {/* "Test Your Knowledge" button removed from here */}
         </CardContent>
       </Card>
       {isUser && (

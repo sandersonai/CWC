@@ -13,7 +13,7 @@ import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
 import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
-import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
+// import { generateQuiz } from '@/ai/flows/generate-quiz-flow'; // No longer needed for single quiz
 import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai/flows/generate-multi-question-quiz-flow';
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
@@ -58,7 +58,7 @@ const aiTools = [
     name: "Hugging Face - Spaces",
     url: "https://huggingface.co/spaces",
     description: "Explore and run various AI models and demos.",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.66 13.86c-.13.39-.5.64-.91.64h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zm-9.32 0c-.13.39-.5.64-.91.64H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.f53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.66 13.86c-.13.39-.5.64-.91.64h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zm-9.32 0c-.13.39-.5.64-.91.64H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
   },
   {
     name: "Perplexity AI",
@@ -99,8 +99,8 @@ export default function Home() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("chat");
-  const [activeQuiz, setActiveQuiz] = useState<{ messageId: string; quizData: QuizData } | null>(null);
-  const [quizLoadingMessageId, setQuizLoadingMessageId] = useState<string | null>(null);
+  // const [activeQuiz, setActiveQuiz] = useState<{ messageId: string; quizData: QuizData } | null>(null); // No longer needed for single quiz
+  // const [quizLoadingMessageId, setQuizLoadingMessageId] = useState<string | null>(null); // No longer needed for single quiz
 
   const [multiQuizQuestions, setMultiQuizQuestions] = useState<QuizData[]>([]);
   const [isMultiQuizLoading, setIsMultiQuizLoading] = useState(false);
@@ -115,12 +115,12 @@ export default function Home() {
         viewport.scrollTop = viewport.scrollHeight;
       }
     }
-  }, [messages, activeTab, activeQuiz, showMultiQuizDialog]);
+  }, [messages, activeTab, showMultiQuizDialog]);
 
 
   const handleSendMessage = async () => {
     if (!inputText.trim() && !uploadedImage) return;
-    setActiveQuiz(null);
+    // setActiveQuiz(null); // No longer needed
 
     const userMessageId = Date.now().toString();
     const userMessage: Message = {
@@ -154,7 +154,7 @@ export default function Home() {
         content: response.response,
         suggestedResources: response.suggestedResources || [],
         nlpAnalysis: response.nlpAnalysis,
-        canHaveQuiz: true,
+        // canHaveQuiz: true, // Retained in Message interface for now, but not used for button
       };
       setMessages((prev) => [...prev, botMessage]);
 
@@ -375,36 +375,10 @@ export default function Home() {
     }
   };
 
-  const handleGenerateSingleQuiz = async (messageId: string, topic: string) => {
-    if (!topic) {
-      toast({ title: "Missing Topic", description: "Cannot generate quiz without a topic.", variant: "destructive" });
-      return;
-    }
-    setActiveQuiz(null);
-    setQuizLoadingMessageId(messageId);
-    try {
-      const quizData = await generateQuiz({ topic });
-      setActiveQuiz({ messageId, quizData });
-    } catch (error) {
-      console.error('Error generating quiz:', error);
-      toast({
-        title: 'Quiz Generation Error',
-        description: `Failed to generate a quiz for "${topic}". ${error instanceof Error ? error.message : 'Please try again.'}`,
-        variant: 'destructive',
-      });
-    } finally {
-      setQuizLoadingMessageId(null);
-    }
-  };
+  // handleGenerateSingleQuiz and handleSingleQuizSubmit are no longer needed
+  // const handleGenerateSingleQuiz = async (messageId: string, topic: string) => { ... }
+  // const handleSingleQuizSubmit = (isCorrect: boolean) => { ... }
 
-  const handleSingleQuizSubmit = (isCorrect: boolean) => {
-    toast({
-      title: isCorrect ? 'Correct!' : 'Incorrect!',
-      description: isCorrect ? 'Great job!' : "Don't worry, keep learning!",
-      variant: isCorrect ? 'default' : 'destructive',
-      className: isCorrect ? 'bg-green-500/10 border-green-500' : 'bg-red-500/10 border-red-500',
-    });
-  };
 
   const handleStartMultiQuiz = async (difficulty: 'Easy' | 'Medium' | 'Hard') => {
     setMultiQuizDifficulty(difficulty);
@@ -530,13 +504,15 @@ export default function Home() {
                   <React.Fragment key={msg.id}>
                     <ChatMessage
                       {...msg}
-                      onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined}
-                      isQuizLoading={quizLoadingMessageId === msg.id}
+                      // onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined} // Removed single quiz generation
+                      // isQuizLoading={quizLoadingMessageId === msg.id} // Removed single quiz loading state
                       nlpAnalysis={msg.nlpAnalysis}
+                      messageId={msg.id} // Pass messageId, ChatMessage still expects it
                     />
-                    {activeQuiz && activeQuiz.messageId === msg.id && (
+                    {/* ActiveQuiz related display removed as single quiz is removed */}
+                    {/* {activeQuiz && activeQuiz.messageId === msg.id && (
                       <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleSingleQuizSubmit} />
-                    )}
+                    )} */}
                   </React.Fragment>
                 ))}
                 {isLoading && (
