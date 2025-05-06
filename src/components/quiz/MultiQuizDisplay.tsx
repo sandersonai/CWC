@@ -102,7 +102,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             ) : (
               <>
                 <Image
-                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/wow-you-did-ok-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
+                  src="https://picsum.photos/300/200" // Replaced with picsum placeholder
                   alt="Encouraging AI Bot"
                   width={300}
                   height={200}
