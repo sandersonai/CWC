@@ -1,8 +1,9 @@
+
 "use client";
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -10,6 +11,9 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
+import { Button } from '@/components/ui/button'; // Import Button
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'; // Import Tooltip components
+import jsPDF from 'jspdf';
 
 interface Message {
   id: string;
@@ -119,12 +123,100 @@ export default function Home() {
     fileInputRef.current?.click();
   };
 
+  const handleDownloadPdf = () => {
+    if (messages.length === 0) {
+      toast({
+        title: 'No Messages',
+        description: 'There are no messages to download.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      const pageHeight = doc.internal.pageSize.height;
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 10;
+      let y = margin; // Vertical position tracker
+
+      doc.setFontSize(16);
+      doc.text("Sanderson AI Learning Chat History", pageWidth / 2, y, { align: 'center' });
+      y += 15; // Move down after title
+
+      doc.setFontSize(10); // Reset font size for messages
+
+      messages.forEach((msg, index) => {
+        const prefix = msg.role === 'user' ? 'You: ' : 'Christian: ';
+        let textToPrint = prefix + msg.content;
+
+        if (msg.image) {
+           // Add placeholder text for images instead of embedding them
+           textToPrint += "\n[User uploaded an image]";
+        }
+
+        // Calculate text dimensions and split if necessary
+        const lines = doc.splitTextToSize(textToPrint, pageWidth - margin * 2);
+        const textHeight = lines.length * doc.getTextDimensions('M').h * 1.2; // Estimate height with line spacing
+
+        // Check if content fits on the current page, add new page if not
+        if (y + textHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin; // Reset y to top margin on new page
+        }
+
+        // Add the text to the PDF
+        doc.text(lines, margin, y);
+        y += textHeight + 5; // Move y down for the next message, adding some spacing
+
+        // Optional: Add a separator line between messages
+        if (index < messages.length - 1 && y < pageHeight - margin - 5) { // Check space for separator
+          doc.setDrawColor(200, 200, 200); // Light gray separator
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 5;
+        }
+      });
+
+      doc.save('sanderson-ai-chat.pdf');
+      toast({
+        title: 'Download Started',
+        description: 'Your chat history PDF is downloading.',
+      });
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast({
+            title: 'PDF Generation Failed',
+            description: 'Could not generate the PDF. Please try again.',
+            variant: 'destructive',
+        });
+    }
+  };
+
+
   return (
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
       <div className="flex h-screen flex-col bg-secondary">
         {/* Header */}
-        <header className="flex h-16 items-center border-b bg-background px-4 shadow-sm">
+        <header className="flex h-16 items-center justify-between border-b bg-background px-4 shadow-sm">
           <h1 className="text-xl font-semibold text-foreground">Sanderson AI Learning - Chat with Christian</h1>
+           <TooltipProvider>
+             <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleDownloadPdf}
+                        disabled={messages.length === 0}
+                        aria-label="Download chat as PDF"
+                    >
+                        <Download className="h-5 w-5 text-foreground" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Download Chat (PDF)</p>
+                </TooltipContent>
+              </Tooltip>
+           </TooltipProvider>
         </header>
 
         {/* Chat Area */}
@@ -157,3 +249,4 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
