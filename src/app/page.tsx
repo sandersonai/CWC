@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react'; // Removed Video icon
+import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react'; // Removed video/film icons
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -142,6 +142,42 @@ export default function Home() {
       setIsImageLoading(false);
     }
   };
+
+  // Function to handle downloading the generated image
+  const handleDownloadImage = () => {
+    if (!generatedImage) {
+      toast({
+        title: 'No Image',
+        description: 'No image has been generated yet.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = generatedImage;
+      // Extract extension or default to png
+      const mimeType = generatedImage.split(';')[0].split(':')[1];
+      const extension = mimeType?.split('/')[1] || 'png';
+      link.download = `sanderson-ai-generated-image.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast({
+        title: 'Download Started',
+        description: 'The generated image is downloading.',
+      });
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      toast({
+        title: 'Download Failed',
+        description: 'Could not download the image. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
 
   const handleImageUpload = (imageDataUri: string) => {
     setUploadedImage(imageDataUri);
@@ -346,10 +382,10 @@ export default function Home() {
           </TabsContent>
 
            <TabsContent value="generate" className="flex-1 overflow-y-auto p-4 mt-0 data-[state=inactive]:hidden">
-             {/* Use a flex container for the whole tab content to allow the card to grow */}
-             <div className="flex h-full">
-                <Card className="w-full max-w-2xl mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10 overflow-hidden"> {/* Added overflow-hidden */}
-                    <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3"> {/* Adjusted padding */}
+             {/* Increased max-w and added min-h for a larger card */}
+             <div className="flex h-full items-center justify-center">
+                <Card className="w-full max-w-3xl lg:max-w-4xl min-h-[70vh] mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10 overflow-hidden">
+                    <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6 md:pb-3">
                         <CardTitle className="flex items-center text-lg text-primary">
                         <ImageIcon className="mr-2 h-5 w-5" />
                          Generate Image from Prompt
@@ -358,37 +394,48 @@ export default function Home() {
                             Enter a topic or description to generate an image using AI.
                         </CardDescription>
                     </CardHeader>
-                    {/* Removed padding top (pt-0) from CardContent, added bottom padding */}
+                    {/* Adjusted padding and added flex-grow */}
                     <CardContent className="flex flex-col space-y-4 px-4 pb-4 md:px-6 md:pb-6 flex-grow">
                         <Textarea
                             placeholder="e.g., A futuristic cityscape at sunset."
                             value={imagePrompt}
                             onChange={(e) => setImagePrompt(e.target.value)}
                             className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none"
-                            rows={4}
+                            rows={3} // Slightly reduced rows as card is bigger
                             disabled={isImageLoading}
                         />
-                        <Button
-                            onClick={handleGenerateImage}
-                            disabled={isImageLoading || !imagePrompt.trim()}
-                            className={cn(
-                                "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out",
-                            )}
-                        >
-                            {isImageLoading ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <ImageIcon className="mr-2 h-4 w-4" />
-                            )}
-                            Generate Image
-                        </Button>
+                         <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                                onClick={handleGenerateImage}
+                                disabled={isImageLoading || !imagePrompt.trim()}
+                                className={cn(
+                                    "bg-accent hover:bg-accent/90 text-accent-foreground w-full sm:w-auto transition-all duration-200 ease-in-out",
+                                )}
+                            >
+                                {isImageLoading ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                )}
+                                Generate Image
+                            </Button>
+                             <Button
+                                variant="outline" // Secondary action style
+                                onClick={handleDownloadImage}
+                                disabled={!generatedImage || isImageLoading}
+                                className="w-full sm:w-auto" // Added width control
+                                aria-label="Download Generated Image"
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download Image
+                            </Button>
+                        </div>
 
-                        {/* Image container: Use aspect-ratio and relative positioning */}
-                        {/* Removed top margin (mt-4) as CardContent provides spacing */}
-                        <div className="relative w-full aspect-video border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center">
+                        {/* Image container: Use flex-grow and relative positioning */}
+                        <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]"> {/* Increased min-height */}
                             {isImageLoading ? (
                                 <div className="flex flex-col items-center text-muted-foreground">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" /> {/* Larger loader */}
                                     <p>Generating image...</p>
                                 </div>
                             ) : generatedImage ? (
@@ -396,13 +443,13 @@ export default function Home() {
                                     src={generatedImage}
                                     alt="Generated image"
                                     layout="fill"
-                                    objectFit="contain"
-                                    className="rounded-md"
-                                    data-ai-hint="generated image"
+                                    objectFit="contain" // Use contain to show the whole image
+                                    className="rounded-md p-1" // Added padding within container
+                                    data-ai-hint="generated art" // Changed hint
                                 />
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
-                                    <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border/70" />
+                                    <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" /> {/* Larger placeholder icon */}
                                     <p>Generated image will appear here.</p>
                                 </div>
                             )}
