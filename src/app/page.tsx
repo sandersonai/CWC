@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon, Trash2 } from 'lucide-react'; // Removed Menu, XIcon as they are not used. Added Lightbulb, Link, Trash2
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon, Trash2, PartyPopper, Frown } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessage, Message } from '@/components/chat/ChatMessage';
-import { QuizData } from '@/components/chat/QuizDisplay'; // QuizDisplay itself is not directly used here anymore, but QuizData is
+import { QuizData } from '@/components/chat/QuizDisplay';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
@@ -16,7 +16,7 @@ import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Removed CardDescription as it's not directly used at this level
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription as DialogDescriptionComponent, // Aliased for clarity
+  DialogDescription as DialogDescriptionComponent,
   DialogFooter,
   DialogClose,
   AlertDialog,
@@ -48,55 +48,58 @@ import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
 
-const aiTools = [
+const initialAiTools = [
   {
     name: "TensorFlow Playground",
     url: "https://playground.tensorflow.org/",
     description: "Visualize and experiment with neural networks in your browser.",
     icon: <BrainCircuit className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-01-01', // Example: Added long ago
   },
   {
     name: "Leonardo.Ai",
     url: "https://leonardo.ai/",
     description: "Free tier for AI image generation and creative tools.",
     icon: <ImageIcon className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-02-15', // Example: Added some time ago
   },
   {
     name: "Hugging Face - Spaces",
     url: "https://huggingface.co/spaces",
     description: "Explore and run various AI models and demos.",
     icon: <Brain className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-03-10', // Example
   },
   {
     name: "Perplexity AI",
     url: "https://www.perplexity.ai/",
     description: "Conversational AI search engine with cited sources.",
     icon: <MessageSquare className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-04-01', // Example
   },
   {
     name: "Kaggle",
     url: "https://www.kaggle.com/",
     description: "Platform for data science, ML competitions, datasets, and notebooks.",
     icon: <BarChart3 className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-05-20', // Example
   },
   {
     name: "Google Colab",
     url: "https://colab.research.google.com/",
     description: "Free Jupyter notebook environment in the cloud.",
     icon: <Brain className="h-4 w-4 text-primary" />,
-    isNew: false,
+    addedDate: '2024-06-01', // Example
   },
   {
     name: "Google Cloud AI (Free Tier)",
     url: "https://cloud.google.com/free/docs/free-cloud-features#ai_and_machine_learning",
     description: "Access various Google Cloud AI services with free tier limits.",
     icon: <BrainCircuit className="h-4 w-4 text-primary" />,
-    isNew: true, // Marked as new for demonstration
+    // To test the "NEW" badge, set this date to something within the last 7 days
+    // For example, if today is 2024-07-23, '2024-07-20' would show NEW.
+    // Defaulting to an older date for now. User can update this when adding a "new" tool.
+    addedDate: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0], // Example: Added 3 days ago
   },
   // Example of more tools if the list were to grow (not displayed due to slice(0,7))
   // {
@@ -104,7 +107,7 @@ const aiTools = [
   //   url: "https://example.com/another-tool",
   //   description: "This tool would be shown if the list expands.",
   //   icon: <Lightbulb className="h-4 w-4 text-primary" />,
-  //   isNew: true,
+  //   addedDate: new Date().toISOString().split('T')[0], // Added today
   // }
 ];
 
@@ -126,6 +129,8 @@ export default function Home() {
   const [isMultiQuizLoading, setIsMultiQuizLoading] = useState(false);
   const [showMultiQuizDialog, setShowMultiQuizDialog] = useState(false);
   const [multiQuizDifficulty, setMultiQuizDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  
+  const [aiTools, setAiTools] = useState(initialAiTools); // Manage aiTools in state if they need to be dynamic in future
 
 
   useEffect(() => {
@@ -152,7 +157,7 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
     setUploadedImage(null);
-    if (fileInputRef.current) { // Reset file input if an image was sent
+    if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
     setIsLoading(true);
@@ -208,14 +213,14 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
-    // setGeneratedImage(null); // Optionally clear previous image before generating new one
+    // setGeneratedImage(null); // Keep previous image visible during loading of new one
 
     try {
       const response = await generateImageFromPrompt({ prompt: imagePrompt });
       if (!response?.imageDataUri) {
         throw new Error('Image generation failed: No image data returned.');
       }
-      setGeneratedImage(response.imageDataUri);
+      setGeneratedImage(response.imageDataUri); // Image stays visible
       toast({
         title: 'Image Generated',
         description: 'Your image has been generated successfully.',
@@ -322,8 +327,8 @@ export default function Home() {
       messages.forEach((msg, index) => {
         const isUser = msg.role === 'user';
         const prefix = isUser ? 'You: ' : 'Christian: ';
-        const userColor = 'hsl(var(--primary))'; // Or a specific user message color
-        const assistantColor = 'hsl(var(--foreground))'; // Or a specific assistant message color
+        const userColor = 'hsl(var(--primary))';
+        const assistantColor = 'hsl(var(--foreground))';
         const textColor = isUser ? userColor : assistantColor;
 
         let textToPrint = msg.content;
@@ -345,34 +350,32 @@ export default function Home() {
         }
 
 
-        doc.setTextColor(textColor); // Set text color for the current message block
+        doc.setTextColor(textColor);
         const fullText = prefix + textToPrint;
         const lines = doc.splitTextToSize(fullText, pageWidth - margin * 2);
-        const textHeight = lines.length * 10 * 1.4; // Approximate height based on font size and line height
+        const textHeight = lines.length * 10 * 1.4;
 
         if (y + textHeight > pageHeight - margin) {
           doc.addPage();
           y = margin;
-          // Add header to new page if needed
           doc.setFontSize(18);
           doc.setTextColor('hsl(var(--primary))');
           doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
           y += 25;
           doc.setFontSize(10);
           doc.setLineHeightFactor(1.4);
-          doc.setTextColor(textColor); // Reset text color for the new page context
+          doc.setTextColor(textColor);
         }
         
         doc.text(lines, margin, y);
-        y += textHeight + 15; // Add some padding after the message block
+        y += textHeight + 15;
 
-        // Add a separator line between messages, unless it's the last message
-        if (index < messages.length - 1 && y < pageHeight - margin - 10) { // ensure space for line
-          doc.setDrawColor('hsl(var(--border))'); // Use theme border color
+        if (index < messages.length - 1 && y < pageHeight - margin - 10) {
+          doc.setDrawColor('hsl(var(--border))');
           doc.setLineWidth(0.5);
           doc.line(margin, y, pageWidth - margin, y);
-          y += 15; // Add padding after the line
-        } else if (index < messages.length - 1) { // If not enough space for line, add page
+          y += 15;
+        } else if (index < messages.length - 1) {
            doc.addPage();
            y = margin;
            doc.setFontSize(18);
@@ -403,13 +406,12 @@ export default function Home() {
     setMultiQuizDifficulty(difficulty);
     setIsMultiQuizLoading(true);
     setMultiQuizQuestions([]);
-    setShowMultiQuizDialog(true); // Open dialog immediately
+    setShowMultiQuizDialog(true);
     try {
       const response: GenerateMultiQuestionQuizOutput = await generateMultiQuestionQuiz({ difficulty, numberOfQuestions: 7 });
       if (response.questions && response.questions.length > 0) {
         setMultiQuizQuestions(response.questions);
       } else {
-        // This case might be handled by the flow itself, but good to have a fallback
         throw new Error("No questions were generated by the AI.");
       }
     } catch (error) {
@@ -419,7 +421,7 @@ export default function Home() {
         description: `Failed to generate a ${difficulty.toLowerCase()} quiz. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
-      setShowMultiQuizDialog(false); // Close dialog on error if quiz fails to load
+      setShowMultiQuizDialog(false);
     } finally {
       setIsMultiQuizLoading(false);
     }
@@ -432,9 +434,8 @@ export default function Home() {
     toast({
       title: passed ? 'Quiz Passed!' : 'Quiz Complete!',
       description: `You scored ${score} out of ${totalQuestions}. (${percentageScore.toFixed(0)}%)`,
-      className: passed ? 'bg-green-500/10 border-green-500 text-green-300' : 'bg-blue-500/10 border-blue-500 text-blue-300', // Themed toast
+      className: passed ? 'bg-green-500/10 border-green-500 text-green-300' : 'bg-blue-500/10 border-blue-500 text-blue-300',
     });
-    // The quiz dialog will show results internally. No need to close it here.
   };
 
   const handleClearChatAndData = () => {
@@ -447,12 +448,17 @@ export default function Home() {
     setImagePrompt('');
     setGeneratedImage(null);
     setMultiQuizQuestions([]);
-    // setShowMultiQuizDialog(false); // No need to explicitly close quiz dialog, as its state is separate
-    // setActiveTab("chat"); // Keep current tab
     toast({
       title: "Chat Cleared",
       description: "All messages, images, and generated content have been cleared.",
     });
+  };
+
+  const isToolNew = (addedDateString: string) => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const addedDate = new Date(addedDateString);
+    return addedDate >= sevenDaysAgo;
   };
 
 
@@ -461,7 +467,6 @@ export default function Home() {
       <div className="flex h-screen flex-col bg-background text-foreground">
         <header className={cn(
           "flex h-auto items-center justify-between border-b border-border/50 bg-background px-4 py-3 shadow-lg shadow-primary/10",
-          // "sticky top-0 z-50", // Make header sticky if desired
         )}>
           <div className="flex flex-col">
             <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
@@ -484,7 +489,7 @@ export default function Home() {
                     <div className="flex flex-col">
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-foreground">{tool.name}</span>
-                        {tool.isNew && (
+                        {isToolNew(tool.addedDate) && (
                           <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-accent text-accent-foreground rounded-full">
                             NEW
                           </span>
@@ -527,14 +532,14 @@ export default function Home() {
                     </DropdownMenuContent>
                 </DropdownMenu>
              )}
-             {activeTab === "chat" && ( // Clear chat button should be visible if chat tab is active, regardless of quiz dialog
+             {activeTab === "chat" && (
              <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button
-                        variant="destructive" // Keep destructive for high-impact action
+                        variant="destructive"
                         size="sm"
                         aria-label="Clear Chat and Data"
-                        className="h-8" // Standard height
+                        className="h-8"
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Clear Chat
@@ -656,13 +661,13 @@ export default function Home() {
                   </div>
 
                   <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]">
-                    {isImageLoading && !generatedImage && ( // Show loader only if no image is currently displayed
+                    {isImageLoading && !generatedImage && (
                       <div className="flex flex-col items-center text-muted-foreground">
                         <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
                         <p>Generating image...</p>
                       </div>
                     )}
-                    {generatedImage && ( // Display image if available
+                    {generatedImage && (
                       <Image
                         src={generatedImage}
                         alt="Generated image"
@@ -672,13 +677,13 @@ export default function Home() {
                         data-ai-hint="generated art"
                       />
                     )}
-                    {!isImageLoading && !generatedImage && ( // Placeholder if no image and not loading
+                    {!isImageLoading && !generatedImage && (
                       <div className="text-center text-muted-foreground p-4">
                         <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" />
                         <p>Generated image will appear here.</p>
                       </div>
                     )}
-                    {isImageLoading && generatedImage && ( // Overlay loader if generating a new image while an old one is visible
+                    {isImageLoading && generatedImage && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
                       </div>
@@ -730,5 +735,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
-    
