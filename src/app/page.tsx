@@ -1,27 +1,43 @@
+
 "use client";
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit } from 'lucide-react'; // Added BrainCircuit
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle } from 'lucide-react'; // Added XCircle
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessage, Message } from '@/components/chat/ChatMessage';
-import { QuizDisplay, QuizData } from '@/components/chat/QuizDisplay'; // Added QuizDisplay and QuizData
+import { QuizDisplay, QuizData } from '@/components/chat/QuizDisplay';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
 import { generateImageFromPrompt } from '@/ai/flows/generate-image-from-prompt';
-import { generateQuiz } from '@/ai/flows/generate-quiz-flow'; // Added generateQuiz
+import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
+import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai/flows/generate-multi-question-quiz-flow';
+import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
-
-// Message interface is now imported from ChatMessage.tsx
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,20 +54,25 @@ export default function Home() {
   const [activeQuiz, setActiveQuiz] = useState<{ messageId: string; quizData: QuizData } | null>(null);
   const [quizLoadingMessageId, setQuizLoadingMessageId] = useState<string | null>(null);
 
+  const [multiQuizQuestions, setMultiQuizQuestions] = useState<QuizData[]>([]);
+  const [isMultiQuizLoading, setIsMultiQuizLoading] = useState(false);
+  const [showMultiQuizDialog, setShowMultiQuizDialog] = useState(false);
+  const [multiQuizDifficulty, setMultiQuizDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+
 
   useEffect(() => {
-    if (activeTab === "chat" && scrollAreaRef.current) {
+    if (activeTab === "chat" && scrollAreaRef.current && !showMultiQuizDialog) {
       const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
       }
     }
-  }, [messages, activeTab, activeQuiz]);
+  }, [messages, activeTab, activeQuiz, showMultiQuizDialog]);
 
 
   const handleSendMessage = async () => {
     if (!inputText.trim() && !uploadedImage) return;
-    setActiveQuiz(null); // Clear any active quiz when a new message is sent
+    setActiveQuiz(null);
 
     const userMessageId = Date.now().toString();
     const userMessage: Message = {
@@ -73,7 +94,7 @@ export default function Home() {
           imageDataUri: uploadedImage,
           question: inputText || 'Analyze this image and explain any relevant AI concepts.',
         });
-        response = { response: analysisResponse.answer, suggestedResources: [] }; // Adapt to common structure
+        response = { response: analysisResponse.answer, suggestedResources: [] };
       } else {
         response = await respondToAiQuery({
           query: inputText,
@@ -84,7 +105,7 @@ export default function Home() {
         role: 'assistant',
         content: response.response,
         suggestedResources: response.suggestedResources || [],
-        canHaveQuiz: true, // Mark that this message can have a quiz
+        canHaveQuiz: true, // AI responses can have quizzes
       };
       setMessages((prev) => [...prev, botMessage]);
 
@@ -117,13 +138,15 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
+    // Do not clear generatedImage here to keep it visible during regeneration.
+    // setGeneratedImage(null); 
 
     try {
       const response = await generateImageFromPrompt({ prompt: imagePrompt });
       if (!response?.imageDataUri) {
         throw new Error('Image generation failed: No image data returned.');
       }
-      setGeneratedImage(response.imageDataUri);
+      setGeneratedImage(response.imageDataUri); // Update with the new image
       toast({
         title: 'Image Generated',
         description: 'Your image has been generated successfully.',
@@ -135,6 +158,7 @@ export default function Home() {
         description: `Failed to generate the image. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
+      // Do not clear generatedImage on error, keep the old one visible if it exists
     } finally {
       setIsImageLoading(false);
     }
@@ -230,7 +254,7 @@ export default function Home() {
       messages.forEach((msg, index) => {
         const isUser = msg.role === 'user';
         const prefix = isUser ? 'You: ' : 'Christian: ';
-        const userColor = 'hsl(var(--primary))'; // Assuming these CSS vars are defined
+        const userColor = 'hsl(var(--primary))';
         const assistantColor = 'hsl(var(--foreground))';
         const textColor = isUser ? userColor : assistantColor;
 
@@ -297,15 +321,15 @@ export default function Home() {
     }
   };
 
-  const handleGenerateQuiz = async (messageId: string, topic: string) => {
+  const handleGenerateSingleQuiz = async (messageId: string, topic: string) => {
     if (!topic) {
       toast({ title: "Missing Topic", description: "Cannot generate quiz without a topic.", variant: "destructive" });
       return;
     }
-    setActiveQuiz(null); // Clear previous quiz
-    setQuizLoadingMessageId(messageId); // Show loading indicator for this message
+    setActiveQuiz(null);
+    setQuizLoadingMessageId(messageId);
     try {
-      const quizData = await generateQuiz({ topic });
+      const quizData = await generateQuiz({ topic }); // generateQuiz expects GenerateQuizInput
       setActiveQuiz({ messageId, quizData });
     } catch (error) {
       console.error('Error generating quiz:', error);
@@ -319,16 +343,48 @@ export default function Home() {
     }
   };
 
-  const handleQuizSubmit = (isCorrect: boolean) => {
+  const handleSingleQuizSubmit = (isCorrect: boolean) => {
     toast({
       title: isCorrect ? 'Correct!' : 'Incorrect!',
       description: isCorrect ? 'Great job!' : "Don't worry, keep learning!",
-      variant: isCorrect ? 'default' : 'destructive', // 'default' will use primary color which might be better than a neutral for success
+      variant: isCorrect ? 'default' : 'destructive',
       className: isCorrect ? 'bg-green-500/10 border-green-500' : 'bg-red-500/10 border-red-500',
     });
-    // Optionally, you could log quiz results or adapt learning paths here.
   };
 
+  const handleStartMultiQuiz = async (difficulty: 'Easy' | 'Medium' | 'Hard') => {
+    setMultiQuizDifficulty(difficulty);
+    setIsMultiQuizLoading(true);
+    setMultiQuizQuestions([]); // Clear previous questions
+    setShowMultiQuizDialog(true); // Open dialog immediately to show loader
+    try {
+      const response: GenerateMultiQuestionQuizOutput = await generateMultiQuestionQuiz({ difficulty, numberOfQuestions: 7 });
+      if (response.questions && response.questions.length > 0) {
+        setMultiQuizQuestions(response.questions);
+      } else {
+        throw new Error("No questions were generated.");
+      }
+    } catch (error) {
+      console.error('Error generating multi-question quiz:', error);
+      toast({
+        title: 'Quiz Generation Error',
+        description: `Failed to generate a ${difficulty.toLowerCase()} quiz. ${error instanceof Error ? error.message : 'Please try again.'}`,
+        variant: 'destructive',
+      });
+      setShowMultiQuizDialog(false); // Close dialog on error
+    } finally {
+      setIsMultiQuizLoading(false);
+    }
+  };
+
+  const handleMultiQuizComplete = (score: number, totalQuestions: number) => {
+    toast({
+      title: 'Quiz Complete!',
+      description: `You scored ${score} out of ${totalQuestions}.`,
+      className: 'bg-blue-500/10 border-blue-500', // Custom color for quiz completion
+    });
+    // setShowMultiQuizDialog(false); // Keep dialog open to show results, or close with a delay
+  };
 
   return (
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
@@ -340,21 +396,37 @@ export default function Home() {
             <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
             <span className="text-sm text-foreground/80">Chat With Christian</span>
           </div>
-          {activeTab === "chat" && (
-            <div className="flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDownloadPdf}
-                disabled={messages.length === 0}
-                aria-label="Download Chat"
-                className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {activeTab === "chat" && !showMultiQuizDialog && (
+              <div className="flex flex-col items-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDownloadPdf}
+                  disabled={messages.length === 0}
+                  aria-label="Download Chat"
+                  className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
+              </div>
+            )}
+             {!showMultiQuizDialog && ( // Hide quiz dropdown if multi-quiz dialog is open
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="h-8 text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground">
+                        Take a Quiz <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-popover border-border">
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Easy')} className="hover:bg-accent/20">Easy</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Medium')} className="hover:bg-accent/20">Medium</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Hard')} className="hover:bg-accent/20">Hard</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+             )}
+          </div>
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
@@ -382,11 +454,11 @@ export default function Home() {
                   <React.Fragment key={msg.id}>
                     <ChatMessage
                       {...msg}
-                      onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateQuiz : undefined}
+                      onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined}
                       isQuizLoading={quizLoadingMessageId === msg.id}
                     />
                     {activeQuiz && activeQuiz.messageId === msg.id && (
-                      <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleQuizSubmit} />
+                      <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleSingleQuizSubmit} />
                     )}
                   </React.Fragment>
                 ))}
@@ -490,6 +562,43 @@ export default function Home() {
             </div>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={showMultiQuizDialog} onOpenChange={setShowMultiQuizDialog}>
+            <DialogContent className="sm:max-w-3xl h-[90vh] flex flex-col bg-background border-border shadow-2xl">
+                <DialogHeader className="p-4 border-b border-border">
+                    <DialogTitle className="text-xl text-primary">AI Knowledge Quiz</DialogTitle>
+                    <DialogDescription>
+                        Test your understanding of AI/ML concepts. Difficulty: {multiQuizDifficulty}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex-grow overflow-y-auto p-1 md:p-4">
+                    {isMultiQuizLoading ? (
+                        <div className="flex flex-col items-center justify-center h-full">
+                            <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
+                            <p className="text-lg text-muted-foreground">Generating your {multiQuizDifficulty.toLowerCase()} quiz...</p>
+                        </div>
+                    ) : multiQuizQuestions.length > 0 ? (
+                        <MultiQuizDisplay
+                            questions={multiQuizQuestions}
+                            onQuizComplete={handleMultiQuizComplete}
+                            difficulty={multiQuizDifficulty}
+                        />
+                    ) : (
+                         <div className="flex flex-col items-center justify-center h-full">
+                            <XCircle className="h-16 w-16 text-destructive mb-4" />
+                            <p className="text-lg text-muted-foreground">Could not load quiz questions.</p>
+                            <p className="text-sm text-muted-foreground">Please try again or select a different difficulty.</p>
+                        </div>
+                    )}
+                </div>
+                <DialogFooter className="p-4 border-t border-border">
+                    <DialogClose asChild>
+                        <Button variant="outline">Close Quiz</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
       </div>
     </ImageUpload>
   );
