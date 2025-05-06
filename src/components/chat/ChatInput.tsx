@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Paperclip, Send, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils'; // Import cn
+import { cn } from '@/lib/utils';
 
 interface ChatInputProps {
   inputText: string;
@@ -60,7 +60,7 @@ export function ChatInput({
                 onClick={triggerFileInput}
                 disabled={isLoading || !!uploadedImage}
                 aria-label="Attach image"
-                className="text-accent hover:text-accent-foreground hover:bg-accent/20" // Style attach button
+                className="text-accent hover:text-accent-foreground hover:bg-accent/10" // Use accent color, subtle hover
             >
                 <Paperclip className="h-5 w-5" />
             </Button>
@@ -79,13 +79,13 @@ export function ChatInput({
       />
 
       {uploadedImage && (
-        <div className="relative group border border-accent rounded-md"> {/* Added border */}
+        <div className="relative group border border-accent rounded-md p-0.5"> {/* Added accent border and padding */}
           <Image
             src={uploadedImage}
             alt="Uploaded preview"
             width={40}
             height={40}
-            className="h-10 w-10 rounded object-cover" // Adjusted rounding
+            className="h-10 w-10 rounded object-cover"
           />
           <Button
             variant="destructive"
@@ -101,24 +101,25 @@ export function ChatInput({
 
       <Input
         type="text"
-        placeholder={uploadedImage ? "Add a caption or question..." : "Ask Christian about AI..."} // Updated placeholder
+        placeholder={uploadedImage ? "Add a caption or question..." : "Ask Christian about AI..."}
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        className="flex-1 bg-input border-border focus:border-primary focus:ring-primary/50" // Styled input
+        className="flex-1 bg-input border-border focus:border-primary focus:ring-primary/50" // Use theme input/border/focus colors
       />
 
       <Tooltip>
         <TooltipTrigger asChild>
             <Button
-                variant="default" // Changed variant to default for primary color
+                variant="default" // Use default ShadCN style which maps to primary
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
                 className={cn(
-                    "glow-primary", // Add glow effect
-                    isLoading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary/90' // Handle loading state style
+                    // No glow effect needed
+                    isLoading ? 'bg-primary/70 cursor-not-allowed' : 'bg-primary hover:bg-primary/90 text-primary-foreground', // Use theme primary color
+                    "border border-primary/30" // Add light border to send button
                 )}
             >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
@@ -132,3 +133,4 @@ export function ChatInput({
     </TooltipProvider>
   );
 }
+```

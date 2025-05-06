@@ -19,26 +19,27 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
   return (
     <div className={cn('flex items-start space-x-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <Avatar className="h-8 w-8 border border-accent glow-accent"> {/* Added border and glow to bot avatar */}
-          <AvatarFallback className="bg-accent text-accent-foreground"> {/* Styled fallback */}
-            <Bot />
+         <Avatar className="h-8 w-8 border border-border bg-background"> {/* Use theme border and background */}
+          <AvatarFallback className="bg-accent text-accent-foreground"> {/* Use accent for bot fallback */}
+            <Bot className="h-5 w-5"/> {/* Adjusted icon size */}
           </AvatarFallback>
         </Avatar>
       )}
       <Card className={cn(
-        'max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl shadow-lg', // Increased shadow
-        'rounded-md', // Slightly reduced rounding
-        isUser ? 'bg-primary/80 text-primary-foreground glow-primary' : 'bg-card text-card-foreground' // Use primary with opacity for user, add glow
+        'max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl shadow-md', // Use standard shadow
+        'rounded-lg', // Use standard rounding
+         isUser ? 'bg-primary text-primary-foreground' : 'bg-card text-card-foreground' // Use theme colors
       )}>
         <CardContent className="p-3 space-y-2">
           {image && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-sm mb-2 border border-border"> {/* Reduced rounding, added border */}
+            <div className="relative aspect-video w-full overflow-hidden rounded-md mb-2 border border-border"> {/* Use standard rounding and border */}
               <Image
                 src={image}
                 alt="User uploaded image"
                 layout="fill"
                 objectFit="contain"
                 data-ai-hint="message image"
+                className="rounded-md" // Ensure image itself is rounded
               />
             </div>
           )}
@@ -53,12 +54,13 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
         </CardContent>
       </Card>
       {isUser && (
-        <Avatar className="h-8 w-8 border border-primary glow-primary"> {/* Added border and glow to user avatar */}
-          <AvatarFallback className="bg-primary text-primary-foreground"> {/* Styled fallback */}
-            <User />
+         <Avatar className="h-8 w-8 border border-border bg-background"> {/* Use theme border and background */}
+          <AvatarFallback className="bg-primary text-primary-foreground"> {/* Use primary for user fallback */}
+             <User className="h-5 w-5"/> {/* Adjusted icon size */}
           </AvatarFallback>
         </Avatar>
       )}
     </div>
   );
 }
+```

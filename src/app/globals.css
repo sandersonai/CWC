@@ -2,66 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif; /* Changed font for a slightly more modern feel */
-}
-
 @layer base {
   :root {
-    /* Futuristic Dark Theme */
+    /* Sanderson AI Chat Theme - based on proposal */
+    --background: 210 20% 98%; /* Near White */
+    --foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --primary: 195 77% 72%; /* Sky Blue (#87CEEB) */
+    --primary-foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --secondary: 0 0% 100%; /* White (#FFFFFF) */
+    --secondary-foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --muted: 210 40% 96.1%; /* Light Gray */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Medium Gray */
+    --accent: 180 100% 25%; /* Teal (#008080) */
+    --accent-foreground: 0 0% 98%; /* Almost White */
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 98%; /* Almost White */
+    --border: 214.3 31.8% 91.4%; /* Light Gray Border */
+    --input: 214.3 31.8% 91.4%; /* Light Gray Input Background */
+    --ring: 195 77% 72%; /* Sky Blue for focus rings */
+    --chart-1: 195 77% 72%; /* Sky Blue */
+    --chart-2: 180 100% 25%; /* Teal */
+    --chart-3: 210 40% 96.1%; /* Light Gray */
+    --chart-4: 43 74% 66%; /* Orange - Keep for variation */
+    --chart-5: 27 87% 67%; /* Yellowish - Keep for variation */
+    --radius: 0.5rem;
+
+    /* Add sidebar variables based on background/foreground */
+    --sidebar-background: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+  }
+
+  .dark {
+    /* Dark Theme - Inverted/Adjusted from Light */
     --background: 222 47% 11%; /* Dark Blue/Slate */
     --foreground: 210 40% 98%; /* Almost White */
     --card: 222 47% 15%; /* Slightly Lighter Dark Blue */
     --card-foreground: 210 40% 96%; /* Light Gray */
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 90% 55%; /* Electric Blue */
-    --primary-foreground: 210 40% 98%; /* Almost White */
-    --secondary: 217 33% 25%; /* Muted Blue/Gray */
-    --secondary-foreground: 210 40% 98%;
+    --primary: 195 77% 60%; /* Slightly darker Sky Blue for dark mode */
+    --primary-foreground: 222 47% 11%; /* Dark Blue/Slate */
+    --secondary: 222 47% 15%; /* Slightly Lighter Dark Blue */
+    --secondary-foreground: 210 40% 98%; /* Almost White */
     --muted: 217 33% 18%; /* Darker Muted Blue/Gray */
     --muted-foreground: 215 20% 65%; /* Gray */
-    --accent: 180 70% 45%; /* Teal/Cyan */
-    --accent-foreground: 210 40% 98%;
+    --accent: 180 100% 35%; /* Brighter Teal for dark mode */
+    --accent-foreground: 0 0% 98%; /* Almost White */
     --destructive: 0 63% 50%; /* Red */
     --destructive-foreground: 0 0% 98%;
     --border: 217 33% 25%; /* Muted Blue/Gray Border */
     --input: 217 33% 20%; /* Dark Input Background */
-    --ring: 210 90% 65%; /* Lighter Electric Blue for focus rings */
-    --chart-1: 210 90% 55%; /* Electric Blue */
-    --chart-2: 180 70% 45%; /* Teal */
-    --chart-3: 217 33% 50%; /* Brighter Muted Blue */
-    --chart-4: 43 74% 66%; /* Existing Orange */
-    --chart-5: 27 87% 67%; /* Existing Yellowish */
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    /* Dark mode variables are the same as the default light theme is now dark */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 90% 55%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 33% 25%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 180 70% 45%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 217 33% 25%;
-    --input: 217 33% 20%;
-    --ring: 210 90% 65%;
-    --chart-1: 210 90% 55%;
-    --chart-2: 180 70% 45%;
+    --ring: 195 77% 60%; /* Slightly darker Sky Blue for focus rings */
+    --chart-1: 195 77% 60%;
+    --chart-2: 180 100% 35%;
     --chart-3: 217 33% 50%;
     --chart-4: 43 70% 70%;
     --chart-5: 27 80% 70%;
+
+    /* Sidebar variables for dark mode */
+    --sidebar-background: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
   }
 }
 
@@ -70,18 +86,18 @@ body {
     @apply border-border;
   }
   body {
+    font-family: 'Inter', sans-serif; /* Changed font for a slightly more modern feel */
     @apply bg-background text-foreground;
     /* Apply a subtle background pattern or gradient if desired */
     /* background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--muted) / 0.5)); */
   }
 
-  /* Add slight glow effect to primary elements */
-  .glow-primary {
+  /* Remove glow effects as they were part of the previous theme */
+  /* .glow-primary {
      box-shadow: 0 0 15px 2px hsl(var(--primary) / 0.4);
-  }
+  } */
 
-   /* Add slight glow effect to accent elements */
-  .glow-accent {
+   /* .glow-accent {
      box-shadow: 0 0 15px 2px hsl(var(--accent) / 0.4);
-  }
+  } */
 }
