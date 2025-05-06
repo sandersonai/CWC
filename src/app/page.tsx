@@ -476,7 +476,7 @@ export default function Home() {
         )}>
           <div className="flex flex-col">
             <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
-            <span className="text-sm text-foreground/80">Chat With Christian</span>
+            <span className="text-sm text-accent-foreground">Chat With Christian</span>
           </div>
           
           <div className="flex-grow flex justify-center">
@@ -723,7 +723,7 @@ export default function Home() {
                         />
                     ) : (
                          <div className="flex flex-col items-center justify-center h-full">
-                            <XCircle className="h-16 w-16 text-destructive mb-4" />
+                            <Frown className="h-16 w-16 text-destructive mb-4" /> {/* Changed from XCircle to Frown */}
                             <p className="text-lg text-muted-foreground">Could not load quiz questions.</p>
                             <p className="text-sm text-muted-foreground">Please try again or select a different difficulty.</p>
                         </div>
@@ -741,4 +741,5 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
 
