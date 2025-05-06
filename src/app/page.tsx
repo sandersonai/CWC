@@ -405,7 +405,7 @@ export default function Home() {
                             placeholder="e.g., A futuristic cityscape at sunset."
                             value={imagePrompt}
                             onChange={(e) => setImagePrompt(e.target.value)}
-                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none"
+                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none mt-4" // Added mt-4 here
                             rows={3}
                             disabled={isImageLoading}
                         />
