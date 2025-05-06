@@ -74,7 +74,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
       }
     });
     const percentageScore = (score / questions.length) * 100;
-    const passed = percentageScore >= 80;
+    const passed = percentageScore >= 70; // Updated pass rate to 70%
 
     return (
       <Card className="w-full max-w-2xl mx-auto my-4 bg-card border-border/70 shadow-lg">
@@ -102,7 +102,7 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             ) : (
               <>
                 <Image
-                  src="https://picsum.photos/300/200" // Replaced with picsum placeholder
+                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/robot-encouraging-sad-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
                   alt="Encouraging AI Bot"
                   width={300}
                   height={200}
