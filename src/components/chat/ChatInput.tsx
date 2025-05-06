@@ -60,7 +60,7 @@ export function ChatInput({
                 onClick={triggerFileInput}
                 disabled={isLoading || !!uploadedImage}
                 aria-label="Attach image"
-                className="text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full" // Use accent color, slightly more visible hover
+                className="text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full"
             >
                 <Paperclip className="h-5 w-5" />
             </Button>
@@ -79,16 +79,17 @@ export function ChatInput({
       />
 
       {uploadedImage && (
-        <div className="relative group border border-accent/70 rounded-md p-0.5"> {/* Added accent border and padding */}
+        <div className="relative group border border-accent/70 rounded-md p-0.5">
           <Image
             src={uploadedImage}
             alt="Uploaded preview"
             width={40}
             height={40}
             className="h-10 w-10 rounded object-cover"
+            data-ai-hint="uploaded image"
           />
           <Button
-            variant="destructive" // Keep destructive for remove
+            variant="destructive" 
             size="icon"
             className="absolute -right-2 -top-2 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={handleRemoveImage}
@@ -106,22 +107,20 @@ export function ChatInput({
         onChange={(e) => setInputText(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        className="flex-1 bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground" // Use theme colors, ensure text color is foreground
+        className="flex-1 bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
+        suppressHydrationWarning={true}
       />
 
       <Tooltip>
         <TooltipTrigger asChild>
             <Button
-                variant="default" // Use default ShadCN style which maps to primary
+                variant="default" 
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
                 className={cn(
-                    // Optional: Add subtle glow effect on hover/focus
-                    // 'transition-all duration-200 ease-in-out',
-                    // 'hover:shadow-primary/40 hover:shadow-md focus:shadow-primary/40 focus:shadow-md',
-                    isLoading ? 'bg-primary/70 cursor-not-allowed' : 'bg-primary hover:bg-primary/90 text-primary-foreground', // Use theme primary color
-                    "border border-primary/50" // Slightly stronger border for send button
+                    isLoading ? 'bg-accent/70 cursor-not-allowed' : 'bg-accent hover:bg-accent/90 text-accent-foreground',
+                    "border border-accent/50" 
                 )}
             >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
