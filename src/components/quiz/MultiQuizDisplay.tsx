@@ -102,12 +102,12 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
             ) : (
               <>
                 <Image
-                  src="https://picsum.photos/300/200"
+                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/wow-you-did-ok-700x1000.jpg?w=300&h=200&fit=crop&auto=format"
                   alt="Encouraging AI Bot"
                   width={300}
                   height={200}
                   className="rounded-md shadow-lg"
-                  data-ai-hint="robot encouraging"
+                  data-ai-hint="robot encouraging sad"
                 />
                 <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
                 <p className="text-lg text-muted-foreground">A little more training is needed.</p>
