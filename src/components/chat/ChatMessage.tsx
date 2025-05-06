@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardHeader, CardTitle, CardDescription
 import { cn } from '@/lib/utils';
 import { User, Bot, Loader2, Link as LinkIcon, BrainCircuit, BarChart3, Brain } from 'lucide-react'; // Added BarChart3, Brain
+import { Button } from '@/components/ui/button'; // Added import for Button
 
 interface SuggestedResource {
   title: string;
@@ -166,3 +167,4 @@ export function ChatMessage({
     </div>
   );
 }
+
