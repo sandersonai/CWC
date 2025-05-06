@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -122,7 +123,9 @@ export default function Home() {
     setGeneratedVideoImage(null);
 
     try {
-        const response = await generateImageFromPrompt({ prompt: `Generate an image representing a video about: ${videoPrompt}. Style: cinematic, educational.` });
+        // Add context for educational/training video style
+        const fullPrompt = `Generate an image representing an educational training video about: "${videoPrompt}". Style: cinematic, educational, high-quality.`;
+        const response = await generateImageFromPrompt({ prompt: fullPrompt });
         setGeneratedVideoImage(response.imageDataUri);
         toast({
             title: 'Image Generated',
@@ -133,7 +136,7 @@ export default function Home() {
       console.error('Error generating image:', error);
       toast({
         title: 'Generation Error',
-        description: 'Failed to generate the image. Please try again.',
+        description: `Failed to generate the image. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
     } finally {
@@ -202,7 +205,7 @@ export default function Home() {
         const isUser = msg.role === 'user';
         const prefix = isUser ? 'You: ' : 'Christian: ';
         // Use theme colors directly (adjust if needed)
-        const userColor = 'hsl(var(--primary))';
+        const userColor = 'hsl(var(--primary))'; // User color is primary
         const assistantColor = 'hsl(var(--foreground))'; // Use general foreground for assistant
         const textColor = isUser ? userColor : assistantColor;
 
@@ -213,28 +216,48 @@ export default function Home() {
 
         doc.setTextColor(textColor);
 
-        const lines = doc.splitTextToSize(prefix + textToPrint, pageWidth - margin * 2);
-        const textHeight = lines.length * 10 * 1.4;
+        // Calculate text lines with prefix
+        const fullText = prefix + textToPrint;
+        const lines = doc.splitTextToSize(fullText, pageWidth - margin * 2);
+        const textHeight = lines.length * 10 * 1.4; // Estimate height based on line count, font size, and line height factor
 
         if (y + textHeight > pageHeight - margin) {
           doc.addPage();
           y = margin;
+           // Re-add header to new page if desired
+          doc.setFontSize(18);
+          doc.setTextColor('hsl(var(--primary))');
+          doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
+          y += 25;
+          doc.setFontSize(10);
+           doc.setLineHeightFactor(1.4);
+           doc.setTextColor(textColor); // Reset text color for the new page
         }
 
-        doc.setFont(undefined, 'bold');
-        doc.text(prefix, margin, y);
-        const prefixWidth = doc.getTextWidth(prefix);
+        // Print text line by line to handle wrapping correctly
+         doc.text(lines, margin, y);
 
-        doc.setFont(undefined, 'normal');
-        doc.text(lines.map((line, i) => i === 0 ? line.substring(prefix.length) : line), margin + prefixWidth, y);
 
-        y += textHeight + 15;
+        y += textHeight + 15; // Move y position down for the next message + spacing
 
+        // Add separator line if not the last message and there's space
         if (index < messages.length - 1 && y < pageHeight - margin - 10) {
            doc.setDrawColor('hsl(var(--border))'); // Use theme border color
            doc.setLineWidth(0.5);
            doc.line(margin, y, pageWidth - margin, y);
-           y += 15;
+           y += 15; // Add space after the separator
+        } else if (index < messages.length - 1) {
+          // Handle case where separator doesn't fit, add new page before next message
+           doc.addPage();
+           y = margin;
+            // Re-add header to new page
+            doc.setFontSize(18);
+            doc.setTextColor('hsl(var(--primary))');
+            doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
+            y += 25;
+            doc.setFontSize(10);
+            doc.setLineHeightFactor(1.4);
+            // Ensure text color is reset for the message after page break
         }
       });
 
@@ -324,57 +347,58 @@ export default function Home() {
           </TabsContent>
 
            <TabsContent value="generate" className="flex-1 overflow-y-auto p-4 mt-0 data-[state=inactive]:hidden">
-             <Card className="h-full flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10">
-                 <CardHeader>
-                    <CardTitle className="flex items-center text-lg text-primary">
-                      <Video className="mr-2 h-5 w-5" />
-                      Generate Training Video (Image)
-                    </CardTitle>
-                     <CardDescription className="text-muted-foreground">
-                        Enter a topic to generate a representative image (video generation placeholder).
-                    </CardDescription>
-                  </CardHeader>
-                   <CardContent className="flex-1 flex flex-col space-y-4">
-                      <Textarea
-                        placeholder="e.g., What is supervised learning?"
-                        value={videoPrompt}
-                        onChange={(e) => setVideoPrompt(e.target.value)}
-                        className="flex-grow resize-none bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
-                        rows={4}
-                        disabled={isVideoLoading}
-                      />
-                       <Button
-                          onClick={handleGenerateVideo}
-                          disabled={isVideoLoading || !videoPrompt.trim()}
-                           className={cn(
-                              "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out",
-                          )}
+             {/* Use a flex container for the whole tab content to allow the card to grow */}
+             <div className="flex h-full">
+                <Card className="w-full max-w-2xl mx-auto flex flex-col bg-card border-border/70 shadow-lg shadow-accent/10">
+                    <CardHeader>
+                        <CardTitle className="flex items-center text-lg text-primary">
+                        <Video className="mr-2 h-5 w-5" />
+                        Generate Training Video (Image)
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground">
+                            Enter a topic to generate a representative image (video generation placeholder).
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col space-y-4 p-4 pt-0 flex-grow"> {/* Use flex-grow here */}
+                        <Textarea
+                            placeholder="e.g., What is supervised learning?"
+                            value={videoPrompt}
+                            onChange={(e) => setVideoPrompt(e.target.value)}
+                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none" // Removed flex-grow
+                            rows={4}
+                            disabled={isVideoLoading}
+                        />
+                        <Button
+                            onClick={handleGenerateVideo}
+                            disabled={isVideoLoading || !videoPrompt.trim()}
+                            className={cn(
+                                "bg-accent hover:bg-accent/90 text-accent-foreground w-full transition-all duration-200 ease-in-out",
+                            )}
                         >
-                          {isVideoLoading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                             <ImageIcon className="mr-2 h-4 w-4" />
-                          )}
-                          Generate Image
+                            {isVideoLoading ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                            )}
+                            Generate Image
                         </Button>
 
-                        <div className="mt-4 flex-1 min-h-[200px] flex items-center justify-center border border-dashed border-border/50 rounded-md bg-input/50">
+                        {/* Image container: Use aspect-ratio and relative positioning */}
+                        <div className="relative w-full aspect-video mt-4 border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center">
                             {isVideoLoading ? (
                                 <div className="flex flex-col items-center text-muted-foreground">
-                                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                                     <p>Generating image...</p>
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                                    <p>Generating image...</p>
                                 </div>
                             ) : generatedVideoImage ? (
-                                <div className="relative w-full h-full max-h-full aspect-video">
-                                    <Image
-                                        src={generatedVideoImage}
-                                        alt="Generated video representation"
-                                        layout="fill"
-                                        objectFit="contain"
-                                        className="rounded-md"
-                                        data-ai-hint="generated video"
-                                    />
-                                </div>
+                                <Image
+                                    src={generatedVideoImage}
+                                    alt="Generated video representation"
+                                    layout="fill" // Use fill layout
+                                    objectFit="contain" // Contain ensures the whole image is visible
+                                    className="rounded-md"
+                                    data-ai-hint="generated video"
+                                />
                             ) : (
                                 <div className="text-center text-muted-foreground p-4">
                                     <ImageIcon className="h-10 w-10 mx-auto mb-2 text-border/70" />
@@ -384,9 +408,12 @@ export default function Home() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
             </TabsContent>
         </Tabs>
       </div>
     </ImageUpload>
   );
 }
+
+    
