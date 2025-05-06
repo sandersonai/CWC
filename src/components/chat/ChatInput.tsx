@@ -116,7 +116,7 @@ export function ChatInput({
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
             >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 text-foreground" />}
             </Button>
          </TooltipTrigger>
         <TooltipContent>
