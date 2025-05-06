@@ -363,6 +363,7 @@ export default function Home() {
                         className="flex-1 resize-none bg-input border-border focus:border-primary focus:ring-primary/50" // Style textarea
                         rows={4}
                         disabled={isVideoLoading}
+                        suppressHydrationWarning={true} // Added to prevent hydration mismatch errors from browser extensions
                       />
                        <Button
                           onClick={handleGenerateVideo}
