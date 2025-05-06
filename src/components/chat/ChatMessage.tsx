@@ -1,14 +1,18 @@
+
 import * as React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardHeader, CardTitle, CardDescription
 import { cn } from '@/lib/utils';
-import { User, Bot, Loader2, Link as LinkIcon, BrainCircuit } from 'lucide-react'; // Added BrainCircuit
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { User, Bot, Loader2, Link as LinkIcon, BrainCircuit, BarChart3, Brain } from 'lucide-react'; // Added BarChart3, Brain
 
 interface SuggestedResource {
   title: string;
   url: string;
+}
+
+export interface NlpAnalysisData {
+  sentiment?: string;
+  prominentEntities?: Array<{ name: string; type: string }>;
 }
 
 export interface Message {
@@ -18,15 +22,14 @@ export interface Message {
   image?: string;
   isLoading?: boolean;
   suggestedResources?: SuggestedResource[];
-  canHaveQuiz?: boolean; // New: Indicates if a quiz can be generated for this message
-  // The actual quiz data will be managed separately in page.tsx, not stored directly in the message object.
+  nlpAnalysis?: NlpAnalysisData; // New: To store NLP analysis results
+  canHaveQuiz?: boolean;
 }
 
-// Props for the component, extending Message but adding specific handlers
 interface ChatMessageProps extends Message {
-  onGenerateQuiz?: (messageId: string, topic: string) => void; // New: Handler to generate quiz
-  isQuizLoading?: boolean; // New: Indicates if quiz for this message is loading
-  messageId: string; // Explicitly pass messageId for quiz handling
+  onGenerateQuiz?: (messageId: string, topic: string) => void;
+  isQuizLoading?: boolean;
+  messageId: string;
 }
 
 export function ChatMessage({
@@ -35,6 +38,7 @@ export function ChatMessage({
   image,
   isLoading = false,
   suggestedResources = [],
+  nlpAnalysis, // Added nlpAnalysis prop
   canHaveQuiz = false,
   onGenerateQuiz,
   isQuizLoading = false,
@@ -44,9 +48,7 @@ export function ChatMessage({
 
   const handleQuizButtonClick = () => {
     if (onGenerateQuiz && content) {
-      // Use the message content (or a summary) as the topic for the quiz
-      // A more sophisticated approach might involve identifying a specific topic from the content.
-      const topic = content.substring(0, 100); // Simple truncation for topic, can be improved
+      const topic = content.substring(0, 100);
       onGenerateQuiz(messageId, topic);
     }
   };
@@ -87,6 +89,32 @@ export function ChatMessage({
             </div>
           ) : (
             content && <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
+          )}
+          {nlpAnalysis && (nlpAnalysis.sentiment || (nlpAnalysis.prominentEntities && nlpAnalysis.prominentEntities.length > 0)) && !isLoading && (
+            <Card className="mt-3 bg-muted/50 border-border/70">
+              <CardHeader className="p-2 pb-1">
+                <CardTitle className="text-xs font-semibold flex items-center text-muted-foreground">
+                  <BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Query Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 pt-0 text-xs space-y-0.5">
+                {nlpAnalysis.sentiment && (
+                  <p><span className="font-medium">Sentiment:</span> {nlpAnalysis.sentiment}</p>
+                )}
+                {nlpAnalysis.prominentEntities && nlpAnalysis.prominentEntities.length > 0 && (
+                  <div>
+                    <span className="font-medium">Key Entities:</span>
+                    <ul className="list-disc list-inside pl-1">
+                      {nlpAnalysis.prominentEntities.slice(0, 3).map((entity, idx) => (
+                        <li key={idx} className="text-xs">
+                          {entity.name} <span className="text-muted-foreground/80">({entity.type})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
           {suggestedResources && suggestedResources.length > 0 && !isLoading && (
             <div className="mt-3 pt-2 border-t border-border/50">

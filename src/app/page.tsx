@@ -3,11 +3,11 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle } from 'lucide-react';
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3 } from 'lucide-react'; // Added Brain, BarChart3
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatMessage, Message } from '@/components/chat/ChatMessage';
+import { ChatMessage, Message, NlpAnalysisData } from '@/components/chat/ChatMessage'; // Updated Message import
 import { QuizDisplay, QuizData } from '@/components/chat/QuizDisplay';
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
@@ -18,7 +18,7 @@ import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardDescription
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogDescription as DialogDescriptionComponent, // Renamed to avoid conflict
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -105,6 +105,7 @@ export default function Home() {
         role: 'assistant',
         content: response.response,
         suggestedResources: response.suggestedResources || [],
+        nlpAnalysis: response.nlpAnalysis, // Add NLP analysis data
         canHaveQuiz: true, // AI responses can have quizzes
       };
       setMessages((prev) => [...prev, botMessage]);
@@ -268,6 +269,14 @@ export default function Home() {
             textToPrint += `- ${res.title}: ${res.url}\n`;
           });
         }
+         if (msg.nlpAnalysis) {
+          textToPrint += "\n\nQuery NLP Analysis:\n";
+          if(msg.nlpAnalysis.sentiment) textToPrint += `- Sentiment: ${msg.nlpAnalysis.sentiment}\n`;
+          if(msg.nlpAnalysis.prominentEntities && msg.nlpAnalysis.prominentEntities.length > 0){
+            textToPrint += `- Entities: ${msg.nlpAnalysis.prominentEntities.map(e => `${e.name} (${e.type})`).join(', ')}\n`;
+          }
+        }
+
 
         doc.setTextColor(textColor);
         const fullText = prefix + textToPrint;
@@ -456,6 +465,7 @@ export default function Home() {
                       {...msg}
                       onGenerateQuiz={msg.role === 'assistant' && msg.canHaveQuiz ? handleGenerateSingleQuiz : undefined}
                       isQuizLoading={quizLoadingMessageId === msg.id}
+                      nlpAnalysis={msg.nlpAnalysis} // Pass NLP analysis data
                     />
                     {activeQuiz && activeQuiz.messageId === msg.id && (
                       <QuizDisplay quiz={activeQuiz.quizData} onQuizSubmit={handleSingleQuizSubmit} />
@@ -567,9 +577,9 @@ export default function Home() {
             <DialogContent className="sm:max-w-3xl h-[90vh] flex flex-col bg-background border-border shadow-2xl">
                 <DialogHeader className="p-4 border-b border-border">
                     <DialogTitle className="text-xl text-primary">AI Knowledge Quiz</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescriptionComponent>
                         Test your understanding of AI/ML concepts. Difficulty: {multiQuizDifficulty}
-                    </DialogDescription>
+                    </DialogDescriptionComponent>
                 </DialogHeader>
                 <div className="flex-grow overflow-y-auto p-1 md:p-4">
                     {isMultiQuizLoading ? (
@@ -603,3 +613,4 @@ export default function Home() {
     </ImageUpload>
   );
 }
+

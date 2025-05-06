@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Responds to AI and machine learning queries from the user.
@@ -10,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { findRelevantResourcesTool } from '@/ai/tools/find-relevant-resources-tool';
+import { googleCloudNlpTool } from '@/ai/tools/google-cloud-nlp-tool'; // Import the new tool
 
 const RespondToAiQueryInputSchema = z.object({
   query: z.string().describe('The AI or machine learning query from the user.'),
@@ -27,9 +29,15 @@ const SuggestedResourceSchema = z.object({
   url: z.string().url().describe('The URL of the suggested resource.'),
 });
 
+const NlpAnalysisSchema = z.object({
+  sentiment: z.string().optional().describe('Overall sentiment of the query (Positive, Negative, Neutral, Mixed).'),
+  prominentEntities: z.array(z.object({ name: z.string(), type: z.string() })).optional().describe('Prominent entities extracted from the query.'),
+}).optional();
+
 const RespondToAiQueryOutputSchema = z.object({
   response: z.string().describe('The response to the AI query.'),
   suggestedResources: z.array(SuggestedResourceSchema).optional().describe('A list of suggested resources for further learning.'),
+  nlpAnalysis: NlpAnalysisSchema.describe('Optional NLP analysis results of the user query if performed.'),
   // canHaveQuiz is handled on the client-side and not part of the AI model's direct output schema
 });
 export type RespondToAiQueryOutput = z.infer<typeof RespondToAiQueryOutputSchema>;
@@ -42,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'respondToAiQueryPrompt',
   input: {schema: RespondToAiQueryInputSchema},
   output: {schema: RespondToAiQueryOutputSchema}, // Only define what the LLM should output
-  tools: [findRelevantResourcesTool],
+  tools: [findRelevantResourcesTool, googleCloudNlpTool], // Add the new tool
   prompt: `You are Christian, a helpful AI chatbot for the Sanderson AI Learning app. Your goal is to answer questions about AI and machine learning in a clear, educational, and engaging manner.
   Your knowledge base includes:
   - Core AI/ML concepts (supervised/unsupervised learning, reinforcement learning, etc.)
@@ -52,10 +60,15 @@ const prompt = ai.definePrompt({
   - Explainable AI (XAI) techniques and importance.
 
   Analyze the user's query. Provide a comprehensive answer to the query.
+
+  If the user's query is substantial and text-based (not primarily an image query), you MAY use the 'googleCloudNlpTool' to perform a deeper analysis of the query's sentiment and prominent entities.
+  Only use the 'googleCloudNlpTool' if you believe its output (sentiment, entities) will add significant value to your response or understanding, for example, by tailoring the tone of your answer or highlighting key concepts in the user's question.
+  If you use the 'googleCloudNlpTool', include its results in the 'nlpAnalysis' field of your output. Otherwise, omit this field.
+
   Then, identify the primary AI/ML topic within the user's query.
   If a clear topic is identified and the 'findRelevantResourcesTool' can provide relevant external resources for that topic, use the tool by providing the identified topic as input.
-  Only use the tool if you are confident it will provide valuable, distinct "Learn More" suggestions beyond your own answer.
-  Include any resources returned by the tool in the 'suggestedResources' field of your output. If the tool returns no resources, or if you decide not to use the tool for a particular query, omit the 'suggestedResources' field or return an empty array.
+  Only use the 'findRelevantResourcesTool' if you are confident it will provide valuable, distinct "Learn More" suggestions beyond your own answer.
+  Include any resources returned by the 'findRelevantResourcesTool' in the 'suggestedResources' field of your output. If the tool returns no resources, or if you decide not to use the tool for a particular query, omit the 'suggestedResources' field or return an empty array.
 
   Use the following information to formulate your response:
   Query: {{{query}}}
@@ -79,3 +92,4 @@ const respondToAiQueryFlow = ai.defineFlow(
     return output!;
   }
 );
+
