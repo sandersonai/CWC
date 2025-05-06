@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview Generates an *image* based on a text prompt using Genkit, often representing a video concept.
+ * @fileOverview Generates an *image* based on a text prompt using Genkit.
  *
  * - generateImageFromPrompt - A function that takes a text prompt and returns a generated image as a data URI.
  * - GenerateImageInput - The input type for the generateImageFromPrompt function.
@@ -13,7 +13,7 @@ import {z} from 'genkit';
 
 // Define schema internally, but do not export it directly
 const GenerateImageInputSchema = z.object({
-  prompt: z.string().describe('The text prompt to generate an image from (representing a video concept).'), // Updated description
+  prompt: z.string().describe('The text prompt to generate an image from.'), // Simple description
 });
 // Export only the type
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
@@ -41,11 +41,11 @@ const generateImageFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-       console.log(`Generating concept image for prompt: "${input.prompt}"`); // Updated log message
+       console.log(`Generating image for prompt: "${input.prompt}"`); // Updated log message
        const { media } = await ai.generate({
          // IMPORTANT: ONLY the googleai/gemini-2.0-flash-exp model is able to generate images.
          model: 'googleai/gemini-2.0-flash-exp',
-         prompt: input.prompt,
+         prompt: input.prompt, // Use the prompt directly
          config: {
            // MUST provide both TEXT and IMAGE, IMAGE only won't work reliably
            responseModalities: ['TEXT', 'IMAGE'],
@@ -56,13 +56,13 @@ const generateImageFlow = ai.defineFlow(
             throw new Error('Image generation failed: No media URL returned.');
         }
 
-        console.log(`Concept image generated successfully.`); // Updated log message
+        console.log(`Image generated successfully.`); // Updated log message
         return { imageDataUri: media.url };
 
     } catch (error) {
         console.error("Error in generateImageFlow:", error);
         // Consider more specific error handling or re-throwing
-        throw new Error(`Failed to generate concept image: ${error instanceof Error ? error.message : String(error)}`); // Updated error message
+        throw new Error(`Failed to generate image: ${error instanceof Error ? error.message : String(error)}`); // Updated error message
     }
   }
 );
