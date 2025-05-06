@@ -4,23 +4,27 @@
  * @fileOverview Generates an image based on a text prompt using Genkit.
  *
  * - generateImageFromPrompt - A function that takes a text prompt and returns a generated image as a data URI.
- * - GenerateImageInputSchema - The input type for the generateImageFromPrompt function.
- * - GenerateImageOutputSchema - The return type for the generateImageFromPrompt function.
+ * - GenerateImageInput - The input type for the generateImageFromPrompt function.
+ * - GenerateImageOutput - The return type for the generateImageFromPrompt function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateImageInputSchema = z.object({
+// Define schema internally, but do not export it directly
+const GenerateImageInputSchema = z.object({
   prompt: z.string().describe('The text prompt to generate an image from.'),
 });
+// Export only the type
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
-export const GenerateImageOutputSchema = z.object({
+// Define schema internally, but do not export it directly
+const GenerateImageOutputSchema = z.object({
   imageDataUri: z.string().describe(
     "The generated image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
   ),
 });
+// Export only the type
 export type GenerateImageOutput = z.infer<typeof GenerateImageOutputSchema>;
 
 
@@ -32,8 +36,8 @@ export async function generateImageFromPrompt(input: GenerateImageInput): Promis
 const generateImageFlow = ai.defineFlow(
   {
     name: 'generateImageFlow',
-    inputSchema: GenerateImageInputSchema,
-    outputSchema: GenerateImageOutputSchema,
+    inputSchema: GenerateImageInputSchema, // Use internal schema
+    outputSchema: GenerateImageOutputSchema, // Use internal schema
   },
   async (input) => {
     try {

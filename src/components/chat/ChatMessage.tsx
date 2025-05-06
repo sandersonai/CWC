@@ -63,4 +63,3 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
     </div>
   );
 }
-```
