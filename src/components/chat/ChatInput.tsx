@@ -115,7 +115,7 @@ export function ChatInput({
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
-                 className={isLoading ? '' : 'text-black'} // Apply black color only when not loading
+                 className={isLoading ? 'border border-input' : 'text-black border border-input'} // Apply black color and border
             >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </Button>

@@ -200,7 +200,7 @@ export default function Home() {
         <header className="flex h-auto items-center justify-between border-b bg-background px-4 py-3 shadow-sm"> {/* Adjusted height to auto and padding */}
            <div className="flex flex-col"> {/* Wrap title in a flex column */}
             <h1 className="text-xl font-semibold text-foreground leading-tight">Sanderson AI Learning</h1> {/* Main title */}
-            <span className="text-sm text-muted-foreground">Chat With Christian</span> {/* Subtitle */}
+            <span className="text-sm text-foreground">Chat With Christian</span> {/* Subtitle - Changed text-muted-foreground to text-foreground */}
           </div>
            <div className="flex flex-col items-center">
                 <Button
