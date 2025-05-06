@@ -197,8 +197,11 @@ export default function Home() {
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
       <div className="flex h-screen flex-col bg-secondary">
         {/* Header */}
-        <header className="flex h-16 items-center justify-between border-b bg-background px-4 shadow-sm">
-          <h1 className="text-xl font-semibold text-foreground">Sanderson AI Learning - Chat with Christian</h1>
+        <header className="flex h-auto items-center justify-between border-b bg-background px-4 py-3 shadow-sm"> {/* Adjusted height to auto and padding */}
+           <div className="flex flex-col"> {/* Wrap title in a flex column */}
+            <h1 className="text-xl font-semibold text-foreground leading-tight">Sanderson AI Learning</h1> {/* Main title */}
+            <span className="text-sm text-muted-foreground">Chat With Christian</span> {/* Subtitle */}
+          </div>
            <div className="flex flex-col items-center">
                 <Button
                     variant="ghost"
