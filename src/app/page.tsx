@@ -44,7 +44,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/dialog"; // Added AlertDialog imports
+} from "@/components/ui/dialog"; // Ensured AlertDialog imports are present
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
