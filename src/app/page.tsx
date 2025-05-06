@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { Loader2, Download, Image as ImageIcon, MessageSquare, Film } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -32,15 +32,14 @@ export default function Home() {
   const [inputText, setInputText] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePrompt, setImagePrompt] = useState(''); // State for image prompt
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null); // State for generated image URI
-  const [isImageLoading, setIsImageLoading] = useState(false); // State for image generation loading
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState("chat"); // State to track active tab
+  const [activeTab, setActiveTab] = useState("chat");
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     if (activeTab === "chat" && scrollAreaRef.current) {
       const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -109,7 +108,6 @@ export default function Home() {
     }
   };
 
-  // Function to handle image generation
   const handleGenerateImage = async () => {
     if (!imagePrompt.trim()) {
         toast({
@@ -121,8 +119,7 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
-    // Do not clear generatedImage here, keep the previous image visible while loading
-    // setGeneratedImage(null);
+    // setGeneratedImage(null); // Keep previous image visible while loading new one
 
     try {
         console.log("Calling generateImageFromPrompt with prompt:", imagePrompt);
@@ -152,7 +149,6 @@ export default function Home() {
     }
   };
 
-  // Function to handle downloading the generated image
   const handleDownloadImage = () => {
     if (!generatedImage) {
       toast({
@@ -166,7 +162,6 @@ export default function Home() {
     try {
       const link = document.createElement('a');
       link.href = generatedImage;
-      // Extract extension or default to png
       const mimeType = generatedImage.split(';')[0].split(':')[1];
       const extension = mimeType?.split('/')[1] || 'png';
       link.download = `sanderson-ai-generated-image.${extension}`;
@@ -232,12 +227,12 @@ export default function Home() {
       let y = margin;
 
       doc.setFontSize(18);
-      doc.setTextColor('hsl(var(--primary))'); // Use primary color
+      doc.setTextColor('hsl(var(--primary))');
       doc.text("Sanderson AI Learning Chat History", pageWidth / 2, y, { align: 'center' });
       y += 25;
 
       doc.setFontSize(10);
-      doc.setTextColor('hsl(var(--muted-foreground))'); // Use muted foreground
+      doc.setTextColor('hsl(var(--muted-foreground))');
       doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth / 2, y, { align: 'center' });
       y += 30;
 
@@ -248,9 +243,8 @@ export default function Home() {
       messages.forEach((msg, index) => {
         const isUser = msg.role === 'user';
         const prefix = isUser ? 'You: ' : 'Christian: ';
-        // Use theme colors directly (adjust if needed)
-        const userColor = 'hsl(var(--primary))'; // User color is primary
-        const assistantColor = 'hsl(var(--foreground))'; // Use general foreground for assistant
+        const userColor = 'hsl(var(--primary))';
+        const assistantColor = 'hsl(var(--foreground))';
         const textColor = isUser ? userColor : assistantColor;
 
         let textToPrint = msg.content;
@@ -260,48 +254,39 @@ export default function Home() {
 
         doc.setTextColor(textColor);
 
-        // Calculate text lines with prefix
         const fullText = prefix + textToPrint;
         const lines = doc.splitTextToSize(fullText, pageWidth - margin * 2);
-        const textHeight = lines.length * 10 * 1.4; // Estimate height based on line count, font size, and line height factor
+        const textHeight = lines.length * 10 * 1.4; 
 
         if (y + textHeight > pageHeight - margin) {
           doc.addPage();
           y = margin;
-           // Re-add header to new page if desired
           doc.setFontSize(18);
           doc.setTextColor('hsl(var(--primary))');
           doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
           y += 25;
           doc.setFontSize(10);
-           doc.setLineHeightFactor(1.4);
-           doc.setTextColor(textColor); // Reset text color for the new page
+          doc.setLineHeightFactor(1.4);
+          doc.setTextColor(textColor);
         }
+        
+        doc.text(lines, margin, y);
+        y += textHeight + 15;
 
-        // Print text line by line to handle wrapping correctly
-         doc.text(lines, margin, y);
-
-
-        y += textHeight + 15; // Move y position down for the next message + spacing
-
-        // Add separator line if not the last message and there's space
         if (index < messages.length - 1 && y < pageHeight - margin - 10) {
-           doc.setDrawColor('hsl(var(--border))'); // Use theme border color
+           doc.setDrawColor('hsl(var(--border))'); 
            doc.setLineWidth(0.5);
            doc.line(margin, y, pageWidth - margin, y);
-           y += 15; // Add space after the separator
+           y += 15; 
         } else if (index < messages.length - 1) {
-          // Handle case where separator doesn't fit, add new page before next message
            doc.addPage();
            y = margin;
-            // Re-add header to new page
             doc.setFontSize(18);
             doc.setTextColor('hsl(var(--primary))');
             doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
             y += 25;
             doc.setFontSize(10);
             doc.setLineHeightFactor(1.4);
-            // Ensure text color is reset for the message after page break
         }
       });
 
@@ -331,22 +316,23 @@ export default function Home() {
              <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
              <span className="text-sm text-foreground/80">Chat With Christian</span>
            </div>
-           <div className="flex flex-col items-center">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleDownloadPdf}
-                    disabled={messages.length === 0 && activeTab === "chat"} // Disable if no messages *and* in chat tab
-                    aria-label="Download Chat"
-                    className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors"
-                >
-                    <Download className="h-4 w-4" />
-                </Button>
-                 <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
-            </div>
+           {activeTab === "chat" && (
+            <div className="flex flex-col items-center">
+                  <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDownloadPdf}
+                      disabled={messages.length === 0}
+                      aria-label="Download Chat"
+                      className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full transition-colors"
+                  >
+                      <Download className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
+              </div>
+            )}
         </header>
 
-        {/* Main Content Area using Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
           <TabsList className="mx-4 mt-4 grid w-auto grid-cols-2 self-start bg-muted/50 border border-border/50 rounded-lg p-1">
             <TabsTrigger value="chat" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary rounded-md">
@@ -398,14 +384,13 @@ export default function Home() {
                         <ImageIcon className="mr-2 h-5 w-5" />
                          Generate Image from Prompt
                         </CardTitle>
-                        {/* Removed CardDescription */}
                     </CardHeader>
                     <CardContent className="flex flex-col space-y-4 px-4 pb-4 md:px-6 md:pb-6 flex-grow">
                         <Textarea
                             placeholder="e.g., A futuristic cityscape at sunset."
                             value={imagePrompt}
                             onChange={(e) => setImagePrompt(e.target.value)}
-                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none mt-4" // Added mt-4 here
+                            className="bg-input border-border focus:border-primary focus:ring-primary/50 text-foreground placeholder:text-muted-foreground resize-none mt-4"
                             rows={3}
                             disabled={isImageLoading}
                         />
@@ -427,7 +412,7 @@ export default function Home() {
                              <Button
                                 variant="outline"
                                 onClick={handleDownloadImage}
-                                disabled={!generatedImage} // Only disable if no image exists
+                                disabled={!generatedImage} 
                                 className="w-full sm:w-auto"
                                 aria-label="Download Generated Image"
                             >
@@ -436,15 +421,14 @@ export default function Home() {
                             </Button>
                         </div>
 
-                        {/* Image container */}
                         <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]">
-                            {isImageLoading && !generatedImage && ( // Show loader only if no previous image exists
+                            {isImageLoading && !generatedImage && ( 
                                 <div className="flex flex-col items-center text-muted-foreground">
                                     <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
                                     <p>Generating image...</p>
                                 </div>
                             )}
-                            {generatedImage && ( // Always show the image if it exists
+                            {generatedImage && ( 
                                 <Image
                                     src={generatedImage}
                                     alt="Generated image"
@@ -454,13 +438,12 @@ export default function Home() {
                                     data-ai-hint="generated art"
                                 />
                             )}
-                            {!isImageLoading && !generatedImage && ( // Show placeholder only if not loading and no image
+                            {!isImageLoading && !generatedImage && ( 
                                 <div className="text-center text-muted-foreground p-4">
                                     <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" />
                                     <p>Generated image will appear here.</p>
                                 </div>
                             )}
-                            {/* Optional: Overlay loader on top of existing image while loading new one */}
                             {isImageLoading && generatedImage && (
                                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
                                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -476,3 +459,5 @@ export default function Home() {
     </ImageUpload>
   );
 }
+
+    
