@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle } from 'lucide-react'; // Added XCircle
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -412,7 +412,7 @@ export default function Home() {
                 <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
               </div>
             )}
-             {!showMultiQuizDialog && ( // Hide quiz dropdown if multi-quiz dialog is open
+             {activeTab === "chat" && !showMultiQuizDialog && ( 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="h-8 text-accent border-accent hover:bg-accent/10 hover:text-accent-foreground">
