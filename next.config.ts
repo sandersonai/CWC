@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  allowedDevOrigins: [
+    'https://9004-idx-studio-1746506627755.cluster-c3a7z3wnwzapkx3rfr5kz62dac.cloudworkstations.dev',
+  ], 
 };
 
 export default nextConfig;

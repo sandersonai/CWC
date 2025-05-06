@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Flow for generating a multi-question quiz on AI/ML topics based on difficulty.
@@ -10,11 +9,11 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { QuizQuestionSchema, type QuizQuestion } from '@/ai/tools/generate-quiz-tool'; // Reusing the existing schema
+import { QuizQuestionSchema } from '@/ai/tools/generate-quiz-tool'; // Reusing the existing schema
 
 const GenerateMultiQuestionQuizInputSchema = z.object({
   difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the quiz.'),
-  numberOfQuestions: z.number().int().positive().describe('The number of questions to generate.'),
+  numberOfQuestions: z.number().int().positive().min(1).max(10).describe('The number of questions to generate (1-10).'), // Added min/max for safety
 });
 export type GenerateMultiQuestionQuizInput = z.infer<typeof GenerateMultiQuestionQuizInputSchema>;
 
@@ -33,7 +32,7 @@ const multiQuestionQuizPrompt = ai.definePrompt({
   input: { schema: GenerateMultiQuestionQuizInputSchema },
   output: { schema: GenerateMultiQuestionQuizOutputSchema },
   prompt: `You are an expert AI/ML quiz generator.
-  Generate a quiz with {{numberOfQuestions}} multiple-choice questions about various AI and Machine Learning topics.
+  Generate a quiz with exactly {{numberOfQuestions}} multiple-choice questions about various AI and Machine Learning topics.
   The difficulty of the questions should be: {{difficulty}}.
   Each question must have:
   - A clear question text.
@@ -45,7 +44,7 @@ const multiQuestionQuizPrompt = ai.definePrompt({
   For 'Easy' difficulty, focus on basic definitions and common applications.
   For 'Medium' difficulty, cover more specific concepts, algorithms, or techniques.
   For 'Hard' difficulty, delve into nuanced details, advanced architectures, or comparative analysis.
-  Provide the output in the specified JSON format for an array of questions.`,
+  Provide the output in the specified JSON format for an array of questions. Ensure the array contains exactly {{numberOfQuestions}} questions.`,
 });
 
 
@@ -58,19 +57,38 @@ const generateMultiQuestionQuizFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await multiQuestionQuizPrompt(input);
-      if (!output || !output.questions || output.questions.length !== input.numberOfQuestions) {
-        // Attempt to regenerate if the output is not as expected
-        console.warn('Initial quiz generation did not meet criteria, attempting regeneration.');
-        const { output: regeneratedOutput } = await multiQuestionQuizPrompt(input);
-        if (!regeneratedOutput || !regeneratedOutput.questions || regeneratedOutput.questions.length !== input.numberOfQuestions) {
-          throw new Error(`Quiz generation failed to produce the correct number of questions after regeneration. Expected ${input.numberOfQuestions}, got ${regeneratedOutput?.questions?.length || 0}`);
+      // Validate the output structure and number of questions
+      if (!output || !Array.isArray(output.questions) || output.questions.length !== input.numberOfQuestions) {
+        console.warn(`Initial quiz generation did not meet criteria (expected ${input.numberOfQuestions}, got ${output?.questions?.length ?? 0}). Attempting regeneration.`);
+        const { output: regeneratedOutput } = await multiQuestionQuizPrompt(input); // Retry once
+        if (!regeneratedOutput || !Array.isArray(regeneratedOutput.questions) || regeneratedOutput.questions.length !== input.numberOfQuestions) {
+          // Log the problematic output for debugging
+          console.error("Regenerated output:", JSON.stringify(regeneratedOutput, null, 2));
+          throw new Error(`Quiz generation failed to produce the correct number of questions after regeneration. Expected ${input.numberOfQuestions}, got ${regeneratedOutput?.questions?.length || 0}.`);
         }
+        // Ensure each question in the regenerated output is valid
+        regeneratedOutput.questions.forEach((q, index) => {
+          const validation = QuizQuestionSchema.safeParse(q);
+          if (!validation.success) {
+            console.error(`Invalid question structure at index ${index} after regeneration:`, validation.error.issues);
+            throw new Error(`Invalid question structure in regenerated quiz at index ${index}.`);
+          }
+        });
         return regeneratedOutput!;
       }
+      // Ensure each question in the initial output is valid
+      output.questions.forEach((q, index) => {
+        const validation = QuizQuestionSchema.safeParse(q);
+        if (!validation.success) {
+            console.error(`Invalid question structure at index ${index} in initial output:`, validation.error.issues);
+            throw new Error(`Invalid question structure in initial quiz at index ${index}.`);
+        }
+      });
       return output!;
     } catch (error) {
       console.error("Error in generateMultiQuestionQuizFlow:", error);
-      throw new Error(`Failed to generate multi-question quiz. ${error instanceof Error ? error.message : String(error)}`);
+      // Provide a more user-friendly error message if possible, or rethrow specific errors.
+      throw new Error(`Failed to generate multi-question quiz for ${input.difficulty} level. ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 );

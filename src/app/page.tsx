@@ -1,14 +1,13 @@
-
 "use client";
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, Menu, XIcon, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon, Trash2 } from 'lucide-react'; // Added Lightbulb, Link, Trash2
+import { Loader2, Download, Image as ImageIcon, MessageSquare, BrainCircuit, ChevronDown, XCircle, Brain, BarChart3, Lightbulb, Link as LinkIcon, Trash2 } from 'lucide-react'; // Removed Menu, XIcon as they are not used. Added Lightbulb, Link, Trash2
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatMessage, Message, NlpAnalysisData } from '@/components/chat/ChatMessage';
-import { QuizDisplay, QuizData } from '@/components/chat/QuizDisplay';
+import { ChatMessage, Message } from '@/components/chat/ChatMessage';
+import { QuizData } from '@/components/chat/QuizDisplay'; // QuizDisplay itself is not directly used here anymore, but QuizData is
 import { ImageUpload } from '@/components/chat/ImageUpload';
 import { respondToAiQuery, RespondToAiQueryOutput } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
@@ -17,7 +16,7 @@ import { generateMultiQuestionQuiz, GenerateMultiQuestionQuizOutput } from '@/ai
 import { MultiQuizDisplay } from '@/components/quiz/MultiQuizDisplay';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Removed CardDescription as it's not directly used at this level
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -32,7 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription as DialogDescriptionComponent,
+  DialogDescription as DialogDescriptionComponent, // Aliased for clarity
   DialogFooter,
   DialogClose,
   AlertDialog,
@@ -44,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/dialog"; // Ensured AlertDialog imports are present
+} from "@/components/ui/dialog";
 import Image from 'next/image';
 import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
@@ -66,7 +65,8 @@ const aiTools = [
     name: "Hugging Face - Spaces",
     url: "https://huggingface.co/spaces",
     description: "Explore and run various AI models and demos.",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.66 13.86c-.13.39-.5.64-.91.64h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zm-9.32 0c-.13.39-.5.64-.91.64H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
+    // Using a generic brain icon as a placeholder for a specific Hugging Face SVG if not readily available or complex
+    icon: <Brain className="h-4 w-4 text-primary" />
   },
   {
     name: "Perplexity AI",
@@ -90,7 +90,7 @@ const aiTools = [
     name: "Google Cloud AI (Free Tier)",
     url: "https://cloud.google.com/free/docs/free-cloud-features#ai_and_machine_learning",
     description: "Access various Google Cloud AI services with free tier limits.",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm6.62 10.88c-.09.32-.38.54-.72.54h-1.3c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H9.6c0-1.38.44-2.58 1.32-3.59.88-1.01 2.05-1.51 3.51-1.51 1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59zM7.38 12.88c-.09.32-.38.54-.72.54H5.13c-.49 0-.89-.33-.95-.78-.06-.45.22-.87.66-.97.6-.14 1.2-.36 1.75-.68.16-.09.3-.22.42-.35.23-.29.35-.65.35-1.01 0-.46-.21-.87-.59-1.15-.38-.28-.88-.43-1.47-.43-.82 0-1.48.27-1.96.81-.48.54-.73 1.28-.73 2.21H3.3c0-1.38.44-2.58 1.32-3.59C5.5 7.27 6.67 6.77 8.13 6.77c1.04 0 1.94.26 2.7.79.76.53 1.14 1.27 1.14 2.23 0 .61-.19 1.16-.57 1.64-.38.48-.91.87-1.59 1.19-.48.22-.95.4-1.39.52-.12.03-.2.14-.2.26 0 .13.11.24.24.24h1.7c.37 0 .68.24.77.59z"></path></svg>
+    icon: <BrainCircuit className="h-4 w-4 text-primary" /> // Using BrainCircuit as a generic AI icon
   },
 ];
 
@@ -138,6 +138,9 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
     setUploadedImage(null);
+    if (fileInputRef.current) { // Reset file input if an image was sent
+        fileInputRef.current.value = '';
+    }
     setIsLoading(true);
 
     try {
@@ -191,6 +194,7 @@ export default function Home() {
     }
 
     setIsImageLoading(true);
+    // setGeneratedImage(null); // Optionally clear previous image before generating new one
 
     try {
       const response = await generateImageFromPrompt({ prompt: imagePrompt });
@@ -304,8 +308,8 @@ export default function Home() {
       messages.forEach((msg, index) => {
         const isUser = msg.role === 'user';
         const prefix = isUser ? 'You: ' : 'Christian: ';
-        const userColor = 'hsl(var(--primary))';
-        const assistantColor = 'hsl(var(--foreground))';
+        const userColor = 'hsl(var(--primary))'; // Or a specific user message color
+        const assistantColor = 'hsl(var(--foreground))'; // Or a specific assistant message color
         const textColor = isUser ? userColor : assistantColor;
 
         let textToPrint = msg.content;
@@ -327,40 +331,42 @@ export default function Home() {
         }
 
 
-        doc.setTextColor(textColor);
+        doc.setTextColor(textColor); // Set text color for the current message block
         const fullText = prefix + textToPrint;
         const lines = doc.splitTextToSize(fullText, pageWidth - margin * 2);
-        const textHeight = lines.length * 10 * 1.4;
+        const textHeight = lines.length * 10 * 1.4; // Approximate height based on font size and line height
 
         if (y + textHeight > pageHeight - margin) {
           doc.addPage();
           y = margin;
+          // Add header to new page if needed
           doc.setFontSize(18);
           doc.setTextColor('hsl(var(--primary))');
           doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
           y += 25;
           doc.setFontSize(10);
           doc.setLineHeightFactor(1.4);
-          doc.setTextColor(textColor);
+          doc.setTextColor(textColor); // Reset text color for the new page context
         }
         
         doc.text(lines, margin, y);
-        y += textHeight + 15;
+        y += textHeight + 15; // Add some padding after the message block
 
-        if (index < messages.length - 1 && y < pageHeight - margin - 10) {
-          doc.setDrawColor('hsl(var(--border))');
+        // Add a separator line between messages, unless it's the last message
+        if (index < messages.length - 1 && y < pageHeight - margin - 10) { // ensure space for line
+          doc.setDrawColor('hsl(var(--border))'); // Use theme border color
           doc.setLineWidth(0.5);
           doc.line(margin, y, pageWidth - margin, y);
-          y += 15;
-        } else if (index < messages.length - 1) {
-          doc.addPage();
-          y = margin;
-          doc.setFontSize(18);
-          doc.setTextColor('hsl(var(--primary))');
-          doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
-          y += 25;
-          doc.setFontSize(10);
-          doc.setLineHeightFactor(1.4);
+          y += 15; // Add padding after the line
+        } else if (index < messages.length - 1) { // If not enough space for line, add page
+           doc.addPage();
+           y = margin;
+           doc.setFontSize(18);
+           doc.setTextColor('hsl(var(--primary))');
+           doc.text("Sanderson AI Learning Chat History (cont.)", pageWidth / 2, y, { align: 'center' });
+           y += 25;
+           doc.setFontSize(10);
+           doc.setLineHeightFactor(1.4);
         }
       });
 
@@ -383,13 +389,14 @@ export default function Home() {
     setMultiQuizDifficulty(difficulty);
     setIsMultiQuizLoading(true);
     setMultiQuizQuestions([]);
-    setShowMultiQuizDialog(true);
+    setShowMultiQuizDialog(true); // Open dialog immediately
     try {
       const response: GenerateMultiQuestionQuizOutput = await generateMultiQuestionQuiz({ difficulty, numberOfQuestions: 7 });
       if (response.questions && response.questions.length > 0) {
         setMultiQuizQuestions(response.questions);
       } else {
-        throw new Error("No questions were generated.");
+        // This case might be handled by the flow itself, but good to have a fallback
+        throw new Error("No questions were generated by the AI.");
       }
     } catch (error) {
       console.error('Error generating multi-question quiz:', error);
@@ -398,7 +405,7 @@ export default function Home() {
         description: `Failed to generate a ${difficulty.toLowerCase()} quiz. ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: 'destructive',
       });
-      setShowMultiQuizDialog(false);
+      setShowMultiQuizDialog(false); // Close dialog on error if quiz fails to load
     } finally {
       setIsMultiQuizLoading(false);
     }
@@ -411,23 +418,26 @@ export default function Home() {
     toast({
       title: passed ? 'Quiz Passed!' : 'Quiz Complete!',
       description: `You scored ${score} out of ${totalQuestions}. (${percentageScore.toFixed(0)}%)`,
-      className: passed ? 'bg-green-500/10 border-green-500' : 'bg-blue-500/10 border-blue-500',
+      className: passed ? 'bg-green-500/10 border-green-500 text-green-300' : 'bg-blue-500/10 border-blue-500 text-blue-300', // Themed toast
     });
+    // The quiz dialog will show results internally. No need to close it here.
   };
 
   const handleClearChatAndData = () => {
     setMessages([]);
     setInputText('');
     setUploadedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setImagePrompt('');
     setGeneratedImage(null);
     setMultiQuizQuestions([]);
-    setShowMultiQuizDialog(false);
-    // Optionally, you might want to clear other states like activeTab if needed
-    // setActiveTab("chat"); 
+    // setShowMultiQuizDialog(false); // No need to explicitly close quiz dialog, as its state is separate
+    // setActiveTab("chat"); // Keep current tab
     toast({
       title: "Chat Cleared",
-      description: "All messages, images, and quiz data have been cleared.",
+      description: "All messages, images, and generated content have been cleared.",
     });
   };
 
@@ -437,6 +447,7 @@ export default function Home() {
       <div className="flex h-screen flex-col bg-background text-foreground">
         <header className={cn(
           "flex h-auto items-center justify-between border-b border-border/50 bg-background px-4 py-3 shadow-lg shadow-primary/10",
+          // "sticky top-0 z-50", // Make header sticky if desired
         )}>
           <div className="flex flex-col">
             <h1 className="text-xl font-semibold text-primary leading-tight">Sanderson AI Learning</h1>
@@ -489,19 +500,20 @@ export default function Home() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-popover border-border">
-                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Easy')} className="hover:bg-accent/20">Easy</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Medium')} className="hover:bg-accent/20">Medium</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Hard')} className="hover:bg-accent/20">Hard</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Easy')} className="hover:bg-accent/20 focus:bg-accent/20">Easy</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Medium')} className="hover:bg-accent/20 focus:bg-accent/20">Medium</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartMultiQuiz('Hard')} className="hover:bg-accent/20 focus:bg-accent/20">Hard</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
              )}
+             {activeTab === "chat" && ( // Clear chat button should be visible if chat tab is active, regardless of quiz dialog
              <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button
-                        variant="destructive"
+                        variant="destructive" // Keep destructive for high-impact action
                         size="sm"
                         aria-label="Clear Chat and Data"
-                        className="h-8"
+                        className="h-8" // Standard height
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Clear Chat
@@ -522,6 +534,7 @@ export default function Home() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            )}
           </div>
         </header>
 
@@ -612,7 +625,7 @@ export default function Home() {
                     <Button
                       variant="outline"
                       onClick={handleDownloadImage}
-                      disabled={!generatedImage}
+                      disabled={!generatedImage || isImageLoading}
                       className="w-full sm:w-auto"
                       aria-label="Download Generated Image"
                     >
@@ -622,13 +635,13 @@ export default function Home() {
                   </div>
 
                   <div className="relative flex-grow w-full border border-dashed border-border/50 rounded-md bg-input/50 overflow-hidden flex items-center justify-center min-h-[300px] md:min-h-[400px]">
-                    {isImageLoading && !generatedImage && (
+                    {isImageLoading && !generatedImage && ( // Show loader only if no image is currently displayed
                       <div className="flex flex-col items-center text-muted-foreground">
                         <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
                         <p>Generating image...</p>
                       </div>
                     )}
-                    {generatedImage && (
+                    {generatedImage && ( // Display image if available
                       <Image
                         src={generatedImage}
                         alt="Generated image"
@@ -638,13 +651,13 @@ export default function Home() {
                         data-ai-hint="generated art"
                       />
                     )}
-                    {!isImageLoading && !generatedImage && (
+                    {!isImageLoading && !generatedImage && ( // Placeholder if no image and not loading
                       <div className="text-center text-muted-foreground p-4">
                         <ImageIcon className="h-12 w-12 mx-auto mb-3 text-border/70" />
                         <p>Generated image will appear here.</p>
                       </div>
                     )}
-                    {isImageLoading && generatedImage && (
+                    {isImageLoading && generatedImage && ( // Overlay loader if generating a new image while an old one is visible
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
                       </div>
@@ -696,4 +709,3 @@ export default function Home() {
     </ImageUpload>
   );
 }
-
