@@ -13,6 +13,7 @@ import { respondToAiQuery } from '@/ai/flows/respond-to-ai-query';
 import { analyzeImageAndRespond } from '@/ai/flows/analyze-image-and-respond';
 import { Button } from '@/components/ui/button';
 import jsPDF from 'jspdf';
+import { cn } from '@/lib/utils'; // Import cn
 
 interface Message {
   id: string;
@@ -62,7 +63,7 @@ export default function Home() {
       if (uploadedImage) {
         response = await analyzeImageAndRespond({
           imageDataUri: uploadedImage,
-          question: inputText || 'Analyze this image.', // Use default question if text is empty
+          question: inputText || 'Analyze this image and explain any relevant AI concepts.', // Updated default question
         });
         const botMessage: Message = {
           id: `${userMessageId}-bot`,
@@ -133,47 +134,77 @@ export default function Home() {
     }
 
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'pt', // Use points for easier calculations with font sizes
+        format: 'a4'
+      });
       const pageHeight = doc.internal.pageSize.height;
       const pageWidth = doc.internal.pageSize.width;
-      const margin = 10;
+      const margin = 40; // Increased margin
       let y = margin; // Vertical position tracker
 
-      doc.setFontSize(16);
+      // Header
+      doc.setFontSize(18);
+      doc.setTextColor(40); // Dark Gray
       doc.text("Sanderson AI Learning Chat History", pageWidth / 2, y, { align: 'center' });
-      y += 15; // Move down after title
+      y += 25;
+
+      // Subtitle (Date)
+      doc.setFontSize(10);
+      doc.setTextColor(100); // Medium Gray
+      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth / 2, y, { align: 'center' });
+      y += 30;
+
 
       doc.setFontSize(10); // Reset font size for messages
+      doc.setLineHeightFactor(1.4); // Increase line spacing
 
       messages.forEach((msg, index) => {
-        const prefix = msg.role === 'user' ? 'You: ' : 'Christian: ';
-        let textToPrint = prefix + msg.content;
+        const isUser = msg.role === 'user';
+        const prefix = isUser ? 'You: ' : 'Christian: ';
+        const textColor = isUser ? '#007bff' : '#333333'; // Blue for user, Dark Gray for bot
+        let textToPrint = msg.content;
 
+        // Add placeholder for images
         if (msg.image) {
-           // Add placeholder text for images instead of embedding them
-           textToPrint += "\n[User uploaded an image]";
+           textToPrint = "[User uploaded an image]\n" + textToPrint;
         }
 
-        // Calculate text dimensions and split if necessary
-        const lines = doc.splitTextToSize(textToPrint, pageWidth - margin * 2);
-        // Estimate height with line spacing - use getTextDimensions for better accuracy
-        const textHeight = lines.length * doc.getTextDimensions('M').h * 1.2;
+        // Set text color
+        doc.setTextColor(textColor);
 
-        // Check if content fits on the current page, add new page if not
+        // Calculate text block dimensions
+        const lines = doc.splitTextToSize(prefix + textToPrint, pageWidth - margin * 2);
+        // Estimate height: number of lines * font size * line height factor
+        const textHeight = lines.length * 10 * 1.4;
+
+        // Check page break
         if (y + textHeight > pageHeight - margin) {
           doc.addPage();
           y = margin; // Reset y to top margin on new page
         }
 
-        // Add the text to the PDF
-        doc.text(lines, margin, y);
-        y += textHeight + 5; // Move y down for the next message, adding some spacing
+        // Add message prefix (bold)
+        doc.setFont(undefined, 'bold');
+        doc.text(prefix, margin, y);
+        // Calculate prefix width
+        const prefixWidth = doc.getTextWidth(prefix);
 
-        // Optional: Add a separator line between messages
-        if (index < messages.length - 1 && y < pageHeight - margin - 5) { // Check space for separator
-          doc.setDrawColor(200, 200, 200); // Light gray separator
-          doc.line(margin, y, pageWidth - margin, y);
-          y += 5;
+        // Add message content (normal)
+        doc.setFont(undefined, 'normal');
+        // doc.text(textToPrint, margin + prefixWidth, y); // This doesn't handle line breaks well
+        doc.text(lines.map((line, i) => i === 0 ? line.substring(prefix.length) : line), margin + prefixWidth, y); // More robust line handling
+
+
+        y += textHeight + 15; // Move y down for the next message, adding spacing
+
+        // Optional: Add separator
+        if (index < messages.length - 1 && y < pageHeight - margin - 10) { // Check space for separator
+           doc.setDrawColor(220, 220, 220); // Light gray separator
+           doc.setLineWidth(0.5);
+           doc.line(margin, y, pageWidth - margin, y);
+           y += 15; // Space after separator
         }
       });
 
@@ -195,12 +226,15 @@ export default function Home() {
 
   return (
     <ImageUpload onImageUpload={handleImageUpload} fileInputRef={fileInputRef}>
-      <div className="flex h-screen flex-col bg-secondary">
+      <div className="flex h-screen flex-col bg-background"> {/* Use theme background */}
         {/* Header */}
-        <header className="flex h-auto items-center justify-between border-b bg-background px-4 py-3 shadow-sm"> {/* Adjusted height to auto and padding */}
-           <div className="flex flex-col"> {/* Wrap title in a flex column */}
-            <h1 className="text-xl font-semibold text-foreground leading-tight">Sanderson AI Learning</h1> {/* Main title */}
-            <span className="text-sm text-foreground">Chat With Christian</span> {/* Subtitle - Changed text-muted-foreground to text-foreground */}
+        <header className={cn(
+            "flex h-auto items-center justify-between border-b border-border/50 bg-card px-4 py-3 shadow-lg", // Use card bg, adjust border, shadow
+             "glow-accent" // Add subtle glow to header
+             )}>
+           <div className="flex flex-col">
+            <h1 className="text-xl font-semibold text-primary leading-tight glow-primary">Sanderson AI Learning</h1> {/* Use primary color, add glow */}
+            <span className="text-sm text-accent">Chat With Christian</span> {/* Use accent color */}
           </div>
            <div className="flex flex-col items-center">
                 <Button
@@ -209,9 +243,9 @@ export default function Home() {
                     onClick={handleDownloadPdf}
                     disabled={messages.length === 0}
                     aria-label="Download Chat"
-                    className="h-8 w-8" // Adjusted size for potentially smaller space
+                    className="h-8 w-8 text-accent hover:text-accent-foreground hover:bg-accent/20 rounded-full" // Style download button
                 >
-                    <Download className="h-4 w-4 text-foreground" />
+                    <Download className="h-4 w-4" />
                 </Button>
                  <span className="text-xs text-muted-foreground mt-0.5">Download Chat</span>
             </div>
@@ -219,7 +253,14 @@ export default function Home() {
 
         {/* Chat Area */}
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
+          <div className="space-y-4 pb-4"> {/* Added padding bottom */}
+           {/* Welcome Message */}
+            {messages.length === 0 && !isLoading && (
+              <ChatMessage
+                role="assistant"
+                content="Welcome to Sanderson AI Learning! I'm Christian, your AI guide. Ask me anything about AI and machine learning, or upload an image for analysis."
+              />
+            )}
             {messages.map((msg) => (
               <ChatMessage key={msg.id} {...msg} />
             ))}
@@ -230,7 +271,7 @@ export default function Home() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="border-t bg-background p-4">
+        <div className="border-t border-border/50 bg-card p-4 shadow-inner"> {/* Use card bg, adjust border, shadow */}
           <ChatInput
             inputText={inputText}
             setInputText={setInputText}
@@ -240,7 +281,7 @@ export default function Home() {
             isLoading={isLoading}
             triggerFileInput={triggerFileInput}
             fileInputRef={fileInputRef}
-            onImageUpload={handleImageUpload} // Pass down the handler
+            onImageUpload={handleImageUpload}
           />
         </div>
       </div>

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Send, X, Loader2 } from 'lucide-react'; // Removed ImageIcon as preview shows image directly
+import { Paperclip, Send, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'; // Keep for other buttons if needed
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils'; // Import cn
 
 interface ChatInputProps {
   inputText: string;
@@ -14,7 +15,7 @@ interface ChatInputProps {
   isLoading: boolean;
   triggerFileInput: () => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
-   onImageUpload: (imageDataUri: string) => void; // Add this prop
+   onImageUpload: (imageDataUri: string) => void;
 }
 
 export function ChatInput({
@@ -26,7 +27,7 @@ export function ChatInput({
   isLoading,
   triggerFileInput,
   fileInputRef,
-  onImageUpload, // Destructure the prop
+  onImageUpload,
 }: ChatInputProps) {
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -41,7 +42,7 @@ export function ChatInput({
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        onImageUpload(reader.result as string); // Use the passed handler
+        onImageUpload(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -49,7 +50,7 @@ export function ChatInput({
 
 
   return (
-    <TooltipProvider> {/* Keep provider if other tooltips exist */}
+    <TooltipProvider>
     <div className="flex items-center space-x-2">
        <Tooltip>
         <TooltipTrigger asChild>
@@ -59,6 +60,7 @@ export function ChatInput({
                 onClick={triggerFileInput}
                 disabled={isLoading || !!uploadedImage}
                 aria-label="Attach image"
+                className="text-accent hover:text-accent-foreground hover:bg-accent/20" // Style attach button
             >
                 <Paperclip className="h-5 w-5" />
             </Button>
@@ -68,7 +70,6 @@ export function ChatInput({
         </TooltipContent>
       </Tooltip>
 
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -77,15 +78,14 @@ export function ChatInput({
         className="hidden"
       />
 
-      {/* Image Preview */}
       {uploadedImage && (
-        <div className="relative group">
+        <div className="relative group border border-accent rounded-md"> {/* Added border */}
           <Image
             src={uploadedImage}
             alt="Uploaded preview"
             width={40}
             height={40}
-            className="h-10 w-10 rounded-md object-cover"
+            className="h-10 w-10 rounded object-cover" // Adjusted rounding
           />
           <Button
             variant="destructive"
@@ -101,21 +101,25 @@ export function ChatInput({
 
       <Input
         type="text"
-        placeholder={uploadedImage ? "Add a caption or question..." : "Type your message or drop an image..."}
+        placeholder={uploadedImage ? "Add a caption or question..." : "Ask Christian about AI..."} // Updated placeholder
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        className="flex-1"
+        className="flex-1 bg-input border-border focus:border-primary focus:ring-primary/50" // Styled input
       />
 
       <Tooltip>
         <TooltipTrigger asChild>
             <Button
+                variant="default" // Changed variant to default for primary color
                 onClick={handleSendMessage}
                 disabled={isLoading || (!inputText.trim() && !uploadedImage)}
                 aria-label="Send message"
-                 className={isLoading ? 'border border-input' : 'text-black border border-input'} // Apply black color and border
+                className={cn(
+                    "glow-primary", // Add glow effect
+                    isLoading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary/90' // Handle loading state style
+                )}
             >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </Button>

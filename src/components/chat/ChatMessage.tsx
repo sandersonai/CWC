@@ -19,20 +19,20 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
   return (
     <div className={cn('flex items-start space-x-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <Avatar className="h-8 w-8">
-          {/* You can replace this with a specific bot avatar if desired */}
-          <AvatarFallback>
+        <Avatar className="h-8 w-8 border border-accent glow-accent"> {/* Added border and glow to bot avatar */}
+          <AvatarFallback className="bg-accent text-accent-foreground"> {/* Styled fallback */}
             <Bot />
           </AvatarFallback>
         </Avatar>
       )}
       <Card className={cn(
-        'max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg shadow-sm',
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-card'
+        'max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl shadow-lg', // Increased shadow
+        'rounded-md', // Slightly reduced rounding
+        isUser ? 'bg-primary/80 text-primary-foreground glow-primary' : 'bg-card text-card-foreground' // Use primary with opacity for user, add glow
       )}>
         <CardContent className="p-3 space-y-2">
           {image && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-md mb-2">
+            <div className="relative aspect-video w-full overflow-hidden rounded-sm mb-2 border border-border"> {/* Reduced rounding, added border */}
               <Image
                 src={image}
                 alt="User uploaded image"
@@ -43,8 +43,9 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
             </div>
           )}
            {isLoading ? (
-            <div className="flex items-center justify-center p-2">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center p-2 space-x-2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+               <span className="text-xs text-muted-foreground">Christian is thinking...</span>
             </div>
           ) : (
              content && <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
@@ -52,9 +53,8 @@ export function ChatMessage({ role, content, image, isLoading = false }: ChatMes
         </CardContent>
       </Card>
       {isUser && (
-        <Avatar className="h-8 w-8">
-          {/* You can replace this with user initials or a profile picture */}
-          <AvatarFallback>
+        <Avatar className="h-8 w-8 border border-primary glow-primary"> {/* Added border and glow to user avatar */}
+          <AvatarFallback className="bg-primary text-primary-foreground"> {/* Styled fallback */}
             <User />
           </AvatarFallback>
         </Avatar>
