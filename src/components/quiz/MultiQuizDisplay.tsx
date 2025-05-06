@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import Image from 'next/image';
+// import Image from 'next/image'; // Removed Image import
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -88,27 +88,13 @@ export function MultiQuizDisplay({ questions, onQuizComplete, difficulty }: Mult
           <div className="flex flex-col items-center space-y-4">
             {passed ? (
               <>
-                <Image
-                  src="https://storage.googleapis.com/idx-dev-artifacts/images/e410ff50-cb0f-48b4-84a9-ff41b48626ac/original_image.webp"
-                  alt="Congratulations You Passed Robot with Trophy"
-                  width={300}
-                  height={450} 
-                  className="rounded-md shadow-lg object-contain"
-                  data-ai-hint="robot trophy"
-                />
+                {/* Image removed */}
                 <p className="text-2xl font-bold text-green-400">Congratulations! You Passed!</p>
                 <Award className="h-12 w-12 text-yellow-400" />
               </>
             ) : (
               <>
-                <Image
-                  src="https://firestuff-prod.imgix.net/ai-generated/JD-P-ai-learning-app/images/robot-sad-sign-700x1000.jpg?w=300&h=450&fit=crop&auto=format"
-                  alt="Sad Robot with Sign - Try Again"
-                  width={300}
-                  height={450}
-                  className="rounded-md shadow-lg object-contain"
-                  data-ai-hint="robot sad sign"
-                />
+                {/* Image removed */}
                 <p className="text-xl font-semibold text-blue-300">Wow, you did good!</p>
                 <p className="text-lg text-muted-foreground">A little more training is needed.</p>
                 <HelpCircle className="h-12 w-12 text-blue-400" />
